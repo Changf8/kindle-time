@@ -32,8 +32,8 @@
   }
   /* 格言：居中基础上稍下移；日期农历：居中基础上稍上移。
      改这里的像素值即可微调幅度（如 60px 更明显）。 */
-  .zone-top .cell    { padding-top: 100px; }
-  .zone-bottom .cell { padding-bottom: 100px; }
+  .zone-top .cell    { padding-top: 40px; }
+  .zone-bottom .cell { padding-bottom: 40px; }
   .rule {
     width: 80%;
     margin: 0 auto;
@@ -88,7 +88,7 @@
       <div class="zone zone-bottom">
         <div class="cell">
           <div class="date"  id="date">----年--月--日 星期-</div>
-          <div class="lunar" id="lunar">农历 ----</div>
+          <div class="lunar" id="lunar">----</div>
         </div>
       </div>
     </div>
@@ -210,7 +210,7 @@ function render(){
              + WEEK_CN[now.getUTCDay()];
 
   var L = solar2lunar(now.getUTCFullYear(), now.getUTCMonth()+1, now.getUTCDate());
-  var lunarStr = "农历 " + ganzhiOf(L.year) + "（" + zodiacOf(L.year) + "）年 "
+  var lunarStr = ganzhiOf(L.year) + "（" + zodiacOf(L.year) + "）年 "
               + monthToCN(L.month, L.isLeap) + dayToCN(L.day);
 
   // 只在内容变化时写 DOM，把墨水屏重绘压到最低（每分钟一次时间刷新）
