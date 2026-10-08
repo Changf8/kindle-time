@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <title>Kindle 时钟</title>
 <style>
   /* DSEG7 Classic Bold（SIL OFL 1.0，作者 keshikan）七段码字体，
@@ -83,7 +83,7 @@
 </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" id="wrap">
     <div class="box">
       <div class="zone zone-top">
         <div class="cell"><div class="motto">临渊羡鱼，不如退而结网。</div></div>
@@ -250,6 +250,7 @@ function requestWakeLock(){
 
 // 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁
 function onWake(){
+  applyViewport();
   render();
   requestWakeLock();
 }
@@ -259,10 +260,37 @@ document.addEventListener('visibilitychange', function(){
 window.addEventListener('pageshow', onWake);   // 从缓存/锁屏恢复
 window.addEventListener('focus', onWake);
 
+/* ===================== 首屏铺满修复 =====================
+   Kindle Paperwhite 2 的实验性浏览器首屏经常不认 width=device-width，
+   把布局视口当成比屏幕更大的尺寸，于是 width:100% 算错、整页缩在左上角；
+   约一分钟后一次全屏刷新才纠正视口。这里不再单纯依赖 CSS 的 100%，
+   而是用 JS 每帧把容器按真实 innerWidth/innerHeight 设成具体像素值，
+   并在加载后多次强制重排，让首屏尽快铺满。 */
+var elWrap = document.getElementById('wrap');
+function applyViewport(){
+  var w = window.innerWidth  || document.documentElement.clientWidth  || 758;
+  var h = window.innerHeight || document.documentElement.clientHeight || 1024;
+  if (elWrap){
+    elWrap.style.width  = w + 'px';
+    elWrap.style.height = h + 'px';
+  }
+  // 强制重排，提示老 WebKit 重新计算视口/布局
+  try { window.scrollTo(0, 0); } catch(e){}
+}
+window.addEventListener('resize', applyViewport);
+// 加载后分多次（含 0.3s/1s/3s）尝试，覆盖首屏视口滞后的窗口
+
+function bootFix(){ applyViewport(); }
+bootFix();
+setTimeout(bootFix, 300);
+setTimeout(bootFix, 1000);
+setTimeout(bootFix, 3000);
+
 render();
+applyViewport();
 requestWakeLock();
 // 每秒检查一次，但只有分钟/日期变了才重绘，避免无谓黑闪
-setInterval(render, 1000);
+setInterval(function(){ applyViewport(); render(); }, 1000);
 </script>
 </body>
 </html>
