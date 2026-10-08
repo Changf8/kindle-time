@@ -24,7 +24,7 @@
     font-weight: 600;
     font-size: 55px;
     letter-spacing: 3px;
-    margin-bottom: 50px;
+    margin-bottom: 34px;
   }
   .time {
     font-weight: 700;
@@ -35,13 +35,13 @@
   .date {
     font-weight: 600;
     font-size: 55px;
-    margin-top: 50px;
+    margin-top: 46px;
     letter-spacing: 3px;
   }
   .lunar {
     font-weight: 600;
     font-size: 55px;
-    margin-top: 30px;
+    margin-top: 24px;
     letter-spacing: 3px;
   }
   /* 窄屏（部分固件 viewport 小于 758）兜底，避免溢出 */
@@ -175,7 +175,7 @@ function render(){
   var mm = pad(now.getUTCMinutes());
   var timeStr = hh+":"+mm;
 
-  var dateStr = now.getUTCFullYear()+"年"+pad(now.getUTCMonth()+1)+"月"+pad(now.getUTCDate())+"日 "
+  var dateStr = now.getUTCFullYear()+"年"+(now.getUTCMonth()+1)+"月"+now.getUTCDate()+"日 "
              + WEEK_CN[now.getUTCDay()];
 
   var L = solar2lunar(now.getUTCFullYear(), now.getUTCMonth()+1, now.getUTCDate());
