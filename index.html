@@ -16,48 +16,49 @@
     font-family: "Kindle", "Noto Sans CJK SC", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   }
-  /* 纵向分布：格言靠上、时间居中、日期农历靠下，减少上下留白。
-     同时写 -webkit-box（老版 WebKit）与 flex（现代浏览器）双兼容。 */
+  /* 三等分布局：上(格言) / 中(时间) / 下(日期农历)，每格各自上下左右居中。
+     时间格上下各加一条细分割线。-webkit-box 与 flex 双写兼容老版 WebKit。 */
   .wrap  { width: 100%; height: 100%; }
   .box {
     display: -webkit-box;
     display: flex;
     -webkit-box-orient: vertical;
     flex-direction: column;
-    -webkit-box-pack: justify;
-    justify-content: space-between;
+    height: 100%;
+  }
+  .zone {
+    -webkit-box-flex: 1;
+    flex: 1;
+    box-sizing: border-box;
+    display: -webkit-box;
+    display: flex;
     -webkit-box-align: center;
     align-items: center;
-    height: 100%;
-    box-sizing: border-box;
-    padding: 36px 0;
+    -webkit-box-pack: center;
+    justify-content: center;
     text-align: center;
+  }
+  .zone-time {
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 18px 0;
   }
 
   .motto {
-    width: 80%;
-    margin: 0 auto;
+    width: 84%;
     font-weight: 600;
     font-size: 46px;
     letter-spacing: 2px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #000;
   }
   .time {
-    width: 80%;
-    margin: 0 auto;
     font-weight: 700;
     font-size: 270px;
     line-height: 1.0;
     letter-spacing: 6px;
-    padding-bottom: 18px;
-    border-bottom: 2px solid #000;
   }
-  .bottom { }
   .date {
     font-weight: 600;
     font-size: 55px;
-    margin-top: 0;
     letter-spacing: 3px;
   }
   .lunar {
@@ -68,8 +69,8 @@
   }
   /* 窄屏（部分固件 viewport 小于 758）兜底，避免溢出 */
   @media (max-width: 600px) {
-    .motto { font-size: 36px; padding-bottom: 14px; }
-    .time  { font-size: 195px; padding-bottom: 12px; }
+    .motto { font-size: 36px; }
+    .time  { font-size: 195px; }
     .date  { font-size: 51px; }
     .lunar { font-size: 47px; }
   }
@@ -78,9 +79,13 @@
 <body>
   <div class="wrap">
     <div class="box">
-      <div class="motto">临渊羡鱼，不如退而结网。</div>
-      <div class="time"  id="time">--:--</div>
-      <div class="bottom">
+      <div class="zone zone-top">
+        <div class="motto">临渊羡鱼，不如退而结网。</div>
+      </div>
+      <div class="zone zone-time">
+        <div class="time" id="time">--:--</div>
+      </div>
+      <div class="zone zone-bottom">
         <div class="date"  id="date">----年--月--日 星期-</div>
         <div class="lunar" id="lunar">农历 ----</div>
       </div>
