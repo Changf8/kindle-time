@@ -16,38 +16,60 @@
     font-family: "Kindle", "Noto Sans CJK SC", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   }
-  /* 用 table 垂直居中，老版 WebKit 兼容性最好 */
-  .wrap  { display: table; width: 100%; height: 100%; }
-  .box   { display: table-cell; vertical-align: middle; text-align: center; }
+  /* 纵向分布：格言靠上、时间居中、日期农历靠下，减少上下留白。
+     同时写 -webkit-box（老版 WebKit）与 flex（现代浏览器）双兼容。 */
+  .wrap  { width: 100%; height: 100%; }
+  .box {
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-orient: vertical;
+    flex-direction: column;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 26px 0;
+    text-align: center;
+  }
 
   .motto {
+    width: 80%;
+    margin: 0 auto;
     font-weight: 600;
     font-size: 55px;
     letter-spacing: 3px;
-    margin-bottom: 34px;
+    padding-bottom: 22px;
+    border-bottom: 2px solid #000;
   }
   .time {
+    width: 80%;
+    margin: 0 auto;
     font-weight: 700;
     font-size: 270px;
     line-height: 1.0;
     letter-spacing: 6px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #000;
   }
+  .bottom { }
   .date {
     font-weight: 600;
     font-size: 55px;
-    margin-top: 46px;
+    margin-top: 0;
     letter-spacing: 3px;
   }
   .lunar {
     font-weight: 600;
     font-size: 55px;
-    margin-top: 24px;
+    margin-top: 22px;
     letter-spacing: 3px;
   }
   /* 窄屏（部分固件 viewport 小于 758）兜底，避免溢出 */
   @media (max-width: 600px) {
-    .motto { font-size: 40px; margin-bottom: 34px; }
-    .time  { font-size: 195px; }
+    .motto { font-size: 40px; padding-bottom: 16px; }
+    .time  { font-size: 195px; padding-bottom: 12px; }
     .date  { font-size: 51px; }
     .lunar { font-size: 47px; }
   }
@@ -58,8 +80,10 @@
     <div class="box">
       <div class="motto">临渊羡鱼，不如退而结网。</div>
       <div class="time"  id="time">--:--</div>
-      <div class="date"  id="date">----年--月--日 星期-</div>
-      <div class="lunar" id="lunar">农历 ----</div>
+      <div class="bottom">
+        <div class="date"  id="date">----年--月--日 星期-</div>
+        <div class="lunar" id="lunar">农历 ----</div>
+      </div>
     </div>
   </div>
 
