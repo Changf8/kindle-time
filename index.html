@@ -19,6 +19,7 @@
     margin: 0;
     padding: 0;
     height: 100%;
+    overflow: hidden;   /* 彻底禁止上下/左右滚动 */
     background: #ffffff;
     color: #000000;
     -webkit-text-size-adjust: 100%;
@@ -268,11 +269,19 @@ window.addEventListener('focus', onWake);
    真实分辨率（Paperwhite 2 = 758×1024）设成固定像素，首屏即铺满。
    换设备时改下面的 DEV_W / DEV_H 即可。 */
 var elWrap = document.getElementById('wrap');
-var DEV_W = 758, DEV_H = 1024;   // 本机设备像素；换设备请同步修改
+var DEV_W = 758, DEV_H = 1024;   // 屏幕物理分辨率；换设备请同步修改
+var SAFE_H = 840;                // 可视高度保守值：浏览器顶部地址栏/工具栏约占 180px
+var lastH = 0;
 function applyViewport(){
-  if (elWrap){
-    elWrap.style.width  = DEV_W + 'px';
-    elWrap.style.height = DEV_H + 'px';
+  if (!elWrap) return;
+  var vh = 0;
+  try { vh = document.documentElement.clientHeight || 0; } catch(e){ vh = 0; }
+  // 首屏 clientHeight 常报错值（如整屏 1024），检测不到合理可视高度就用保守值
+  if (!(vh >= 400 && vh < DEV_H)) vh = SAFE_H;
+  elWrap.style.width = DEV_W + 'px';
+  if (vh !== lastH) {            // 高度变化才写样式，避免墨水屏无谓重绘
+    elWrap.style.height = vh + 'px';
+    lastH = vh;
   }
   // 强制重排，提示老 WebKit 重新计算布局
   try { window.scrollTo(0, 0); } catch(e){}
