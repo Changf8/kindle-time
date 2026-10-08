@@ -20,6 +20,12 @@
   .wrap  { display: table; width: 100%; height: 100%; }
   .box   { display: table-cell; vertical-align: middle; text-align: center; }
 
+  .motto {
+    font-weight: 600;
+    font-size: 55px;
+    letter-spacing: 3px;
+    margin-bottom: 50px;
+  }
   .time {
     font-weight: 700;
     font-size: 270px;
@@ -29,17 +35,18 @@
   .date {
     font-weight: 600;
     font-size: 55px;
-    margin-top: 57px;
+    margin-top: 50px;
     letter-spacing: 3px;
   }
   .lunar {
     font-weight: 600;
     font-size: 55px;
-    margin-top: 33px;
+    margin-top: 30px;
     letter-spacing: 3px;
   }
   /* 窄屏（部分固件 viewport 小于 758）兜底，避免溢出 */
   @media (max-width: 600px) {
+    .motto { font-size: 40px; margin-bottom: 34px; }
     .time  { font-size: 195px; }
     .date  { font-size: 51px; }
     .lunar { font-size: 47px; }
@@ -49,6 +56,7 @@
 <body>
   <div class="wrap">
     <div class="box">
+      <div class="motto">临渊羡鱼，不如退而结网。</div>
       <div class="time"  id="time">--:--</div>
       <div class="date"  id="date">----年--月--日 星期-</div>
       <div class="lunar" id="lunar">农历 ----</div>
@@ -150,16 +158,27 @@ var lastTime="", lastDate="", lastLunar="";
 
 function pad(n){ return n<10 ? "0"+n : ""+n; }
 
+/* 时区修正：Kindle 实验性浏览器的 JS 时间常按 UTC 处理，
+   而用户位于 UTC+8（北京时），导致少算 8 小时。
+   设备内部绝对时间(epoch)其实是对的，只是时区标签问题。
+   这里直接按绝对时间 +8 小时换算为北京时间，无论设备时区如何设置都正确。 */
+var TARGET_TZ = 8;   // 目标时区（小时），中国为 +8；去国外改这里即可
+
+function getLocalNow(){
+  var d = new Date();
+  return new Date(d.getTime() + TARGET_TZ * 3600 * 1000);
+}
+
 function render(){
-  var now = new Date();
-  var hh = pad(now.getHours());
-  var mm = pad(now.getMinutes());
+  var now = getLocalNow();
+  var hh = pad(now.getUTCHours());
+  var mm = pad(now.getUTCMinutes());
   var timeStr = hh+":"+mm;
 
-  var dateStr = now.getFullYear()+"年"+pad(now.getMonth()+1)+"月"+pad(now.getDate())+"日 "
-             + WEEK_CN[now.getDay()];
+  var dateStr = now.getUTCFullYear()+"年"+pad(now.getUTCMonth()+1)+"月"+pad(now.getUTCDate())+"日 "
+             + WEEK_CN[now.getUTCDay()];
 
-  var L = solar2lunar(now.getFullYear(), now.getMonth()+1, now.getDate());
+  var L = solar2lunar(now.getUTCFullYear(), now.getUTCMonth()+1, now.getUTCDate());
   var lunarStr = "农历 " + ganzhiOf(L.year) + "（" + zodiacOf(L.year) + "）年 "
               + monthToCN(L.month, L.isLeap) + dayToCN(L.day);
 
