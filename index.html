@@ -16,36 +16,24 @@
     font-family: "Kindle", "Noto Sans CJK SC", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   }
-  /* 三等分布局：上(格言) / 中(时间) / 下(日期农历)，每格各自上下左右居中。
-     时间格上下各加一条细分割线。-webkit-box 与 flex 双写兼容老版 WebKit。 */
+  /* 三等分表格布局（PW2 老 WebKit 对 flex 支持不稳，display:table 实测可靠）：
+     三行均分整屏高度，每行内 table-cell 垂直+水平居中。
+     时间行上下各一条 1px 细分割线。 */
   .wrap  { width: 100%; height: 100%; }
-  .box {
-    display: -webkit-box;
-    display: flex;
-    -webkit-box-orient: vertical;
-    flex-direction: column;
-    height: 100%;
-  }
-  .zone {
-    -webkit-box-flex: 1;
-    flex: 1;
-    box-sizing: border-box;
-    display: -webkit-box;
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    justify-content: center;
+  .box   { display: table; width: 100%; height: 100%; }
+  .zone  { display: table-row; }
+  .cell  {
+    display: table-cell;
+    vertical-align: middle;
     text-align: center;
   }
-  .zone-time {
+  .zone-time .cell {
     border-top: 1px solid #000;
     border-bottom: 1px solid #000;
-    padding: 18px 0;
+    padding: 16px 0;
   }
 
   .motto {
-    width: 84%;
     font-weight: 600;
     font-size: 46px;
     letter-spacing: 2px;
@@ -79,15 +67,17 @@
 <body>
   <div class="wrap">
     <div class="box">
-      <div class="zone zone-top">
-        <div class="motto">临渊羡鱼，不如退而结网。</div>
+      <div class="zone">
+        <div class="cell"><div class="motto">临渊羡鱼，不如退而结网。</div></div>
       </div>
       <div class="zone zone-time">
-        <div class="time" id="time">--:--</div>
+        <div class="cell"><div class="time" id="time">--:--</div></div>
       </div>
-      <div class="zone zone-bottom">
-        <div class="date"  id="date">----年--月--日 星期-</div>
-        <div class="lunar" id="lunar">农历 ----</div>
+      <div class="zone">
+        <div class="cell">
+          <div class="date"  id="date">----年--月--日 星期-</div>
+          <div class="lunar" id="lunar">农历 ----</div>
+        </div>
       </div>
     </div>
   </div>
