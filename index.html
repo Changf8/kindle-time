@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<style>@viewport { width: 758px; }</style>
 <title>Kindle 时钟</title>
 <style>
   /* DSEG7 Classic Bold（SIL OFL 1.0，作者 keshikan）七段码字体，
@@ -261,20 +262,19 @@ window.addEventListener('pageshow', onWake);   // 从缓存/锁屏恢复
 window.addEventListener('focus', onWake);
 
 /* ===================== 首屏铺满修复 =====================
-   Kindle Paperwhite 2 的实验性浏览器首屏经常不认 width=device-width，
-   把布局视口当成比屏幕更大的尺寸，于是 width:100% 算错、整页缩在左上角；
-   约一分钟后一次全屏刷新才纠正视口。这里不再单纯依赖 CSS 的 100%，
-   而是用 JS 每帧把容器按真实 innerWidth/innerHeight 设成具体像素值，
-   并在加载后多次强制重排，让首屏尽快铺满。 */
+   Kindle Paperwhite 2 的实验性浏览器首屏把布局视口判定成错值，
+   连 window.innerWidth/innerHeight 在首屏也是错的，要等约一分钟后
+   一次全屏刷新才正确。所以这里不再读窗口尺寸，直接把容器按本机
+   真实分辨率（Paperwhite 2 = 758×1024）设成固定像素，首屏即铺满。
+   换设备时改下面的 DEV_W / DEV_H 即可。 */
 var elWrap = document.getElementById('wrap');
+var DEV_W = 758, DEV_H = 1024;   // 本机设备像素；换设备请同步修改
 function applyViewport(){
-  var w = window.innerWidth  || document.documentElement.clientWidth  || 758;
-  var h = window.innerHeight || document.documentElement.clientHeight || 1024;
   if (elWrap){
-    elWrap.style.width  = w + 'px';
-    elWrap.style.height = h + 'px';
+    elWrap.style.width  = DEV_W + 'px';
+    elWrap.style.height = DEV_H + 'px';
   }
-  // 强制重排，提示老 WebKit 重新计算视口/布局
+  // 强制重排，提示老 WebKit 重新计算布局
   try { window.scrollTo(0, 0); } catch(e){}
 }
 window.addEventListener('resize', applyViewport);
