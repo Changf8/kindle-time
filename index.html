@@ -28,10 +28,14 @@
     text-align: center;
   }
   .zone-time .cell {
-    border-top: 1px solid #000;
-    border-bottom: 1px solid #000;
     padding: 16px 0;
   }
+  .rule {
+    width: 80%;
+    margin: 0 auto;
+    border-top: 1px solid #000;
+  }
+  .time-wrap { margin: 14px 0; }
 
   .motto {
     font-weight: 600;
@@ -71,7 +75,11 @@
         <div class="cell"><div class="motto">临渊羡鱼，不如退而结网。</div></div>
       </div>
       <div class="zone zone-time">
-        <div class="cell"><div class="time" id="time">--:--</div></div>
+        <div class="cell">
+          <div class="rule"></div>
+          <div class="time-wrap"><div class="time" id="time">--:--</div></div>
+          <div class="rule"></div>
+        </div>
       </div>
       <div class="zone">
         <div class="cell">
