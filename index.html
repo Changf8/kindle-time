@@ -30,6 +30,10 @@
   .zone-time .cell {
     padding: 16px 0;
   }
+  /* 格言：居中基础上稍下移；日期农历：居中基础上稍上移。
+     改这里的像素值即可微调幅度（如 60px 更明显）。 */
+  .zone-top .cell    { padding-top: 40px; }
+  .zone-bottom .cell { padding-bottom: 40px; }
   .rule {
     width: 80%;
     margin: 0 auto;
@@ -39,7 +43,7 @@
 
   .motto {
     font-weight: 600;
-    font-size: 50px;
+    font-size: 46px;
     letter-spacing: 2px;
   }
   .time {
@@ -50,12 +54,12 @@
   }
   .date {
     font-weight: 600;
-    font-size: 50px;
+    font-size: 55px;
     letter-spacing: 3px;
   }
   .lunar {
     font-weight: 600;
-    font-size: 50px;
+    font-size: 55px;
     margin-top: 22px;
     letter-spacing: 3px;
   }
@@ -71,7 +75,7 @@
 <body>
   <div class="wrap">
     <div class="box">
-      <div class="zone">
+      <div class="zone zone-top">
         <div class="cell"><div class="motto">临渊羡鱼，不如退而结网。</div></div>
       </div>
       <div class="zone zone-time">
@@ -81,7 +85,7 @@
           <div class="rule"></div>
         </div>
       </div>
-      <div class="zone">
+      <div class="zone zone-bottom">
         <div class="cell">
           <div class="date"  id="date">----年--月--日 星期-</div>
           <div class="lunar" id="lunar">农历 ----</div>
