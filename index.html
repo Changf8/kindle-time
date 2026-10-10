@@ -88,13 +88,16 @@
      点页面任意空白处切换。横屏下：时间在上方主区居中最大化，
      底部信息带（日期+农历在上、格言在下）整宽单行显示，不换行。 */
   body.landscape #wrap {
+    /* 不用 top:50%+translate 居中：PW2 老 WebKit 下布局盒会溢出视口，
+       触发"整页缩小适配"（内容变小挤在一角）。
+       改为锚定左上角、仅旋转，垂直居中由 JS 按可视高度算 top。 */
     position: fixed;
-    top: 50%;
-    left: 50%;
-    -webkit-transform: translate(-50%, -50%) rotate(-90deg);
+    top: 0;
+    left: 0;
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
     -webkit-transform-origin: 50% 50%;
-    transform: translate(-50%, -50%) rotate(-90deg);
-    transform-origin: center center;
+    transform-origin: 50% 50%;
   }
   body.landscape .box {
     display: block;
@@ -129,13 +132,6 @@
     width: 2px;
     background: #000000;
   }
-  body.landscape .zone-top > .cell,
-  body.landscape .zone-bottom > .cell {
-    display: block;
-    width: 100%; height: 100%;
-    text-align: center;
-    padding: 0;
-  }
   /* 主区（屏幕上方）：时间居中最大化 */
   body.landscape .zone-time {
     top: 0; bottom: 200px; left: 0; right: 0;
@@ -149,7 +145,9 @@
     height: 100%;
     padding: 0;
   }
-  body.landscape .time { font-size: 270px; }
+  /* 时间块横向宽度受画布宽 758px 约束（旋转不改变这个约束），
+     270px 会横向溢出触发整页缩小；195px 时块宽约 720px，安全铺满 */
+  body.landscape .time { font-size: 195px; }
   /* 横屏信息字号：左右两栏各约 379px 宽，缩到单行不换行的大小 */
   body.landscape .date,
   body.landscape .lunar,
@@ -357,6 +355,8 @@ window.addEventListener('focus', onWake);
 var elWrap = document.getElementById('wrap');
 var DEV_W = 758, DEV_H = 1024;   // 屏幕物理分辨率；换设备请同步修改
 var SAFE_H = 840;                // 可视高度保守值：浏览器顶部地址栏/工具栏约占 180px
+var SAFE_TOP = 60;               // 顶部状态栏+操作栏（浏览器浮层，始终压在页面上方）预留高度；
+                                 // 旋转后内容上沿会顶到这条浮层，预留后可避免被遮挡。按实机测量调大/调小
 var lastH = 0;
 var landscape = false;           // 横屏开关：点击页面任意处切换
 
@@ -370,6 +370,10 @@ function readVH(){
 function applyViewport(){
   if (!elWrap) return;
   var vh = readVH();
+  // 容器固定定位于左上角，统一让出顶部 SAFE_TOP 给状态栏/操作栏浮层
+  elWrap.style.position = 'fixed';
+  elWrap.style.left = '0px';
+  elWrap.style.top  = SAFE_TOP + 'px';
   if (landscape){
     /* 横屏画布：正方形 758×758。宽度不得超过布局视口（758px）——
        若画布宽于视口（如 vh=840），PW2 老 WebKit 会把整页缩小适配，
@@ -379,7 +383,7 @@ function applyViewport(){
   } else {
     elWrap.style.width  = DEV_W + 'px';
     if (vh !== lastH) {            // 高度变化才写样式，避免墨水屏无谓重绘
-      elWrap.style.height = vh + 'px';
+      elWrap.style.height = (vh - SAFE_TOP) + 'px';
       lastH = vh;
     }
   }
@@ -405,8 +409,10 @@ setTimeout(bootFix, 3000);
 render();
 applyViewport();
 requestWakeLock();
-// 每秒检查一次，但只有分钟/日期变了才重绘，避免无谓黑闪
-setInterval(function(){ applyViewport(); render(); }, 1000);
+// 每秒检查一次，但只有分钟/日期变了才重绘，避免无谓黑闪。
+// 注意：不要在秒级循环里调 applyViewport —— 老WebKit上每秒写样式+scrollTo
+// 会干扰浏览器自身的视口/缩放判定（实测出现整页异常放大）
+setInterval(function(){ render(); }, 1000);
 </script>
 </body>
 </html>
