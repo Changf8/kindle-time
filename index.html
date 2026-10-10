@@ -125,6 +125,8 @@
     width: 100%; height: 100%;
     padding: 0;
   }
+  /* 格言整体往右移一点：右栏 cell 加左内边距（不影响左栏） */
+  body.landscape .zone-top > .cell { padding-left: 24px; }
   /* 左右半之间的细分割线（画布里是左半的右缘竖线，旋转后在屏幕里为竖直线）
      bottom: 24px —— 底端不顶到屏幕边，留出空隙 */
   body.landscape .zone-bottom::after {
