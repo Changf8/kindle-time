@@ -167,15 +167,6 @@
     background: #000000;
     z-index: 5;
   }
-  /* 实测诊断条（校准用，临时）：显示浏览器实测视口与当前模式 */
-  .diag {
-    position: fixed;
-    left: 6px; bottom: 4px;
-    font-size: 22px;
-    color: #999999;
-    letter-spacing: 1px;
-    z-index: 50;
-  }
 </style>
 </head>
 <body>
@@ -197,8 +188,6 @@
       </div>
     </div>
   </div>
-
-  <div class="diag" id="diag"></div>
 
 <script>
 /* ===================== 农历 / 生肖 换算（1900–2100，离线内置） ===================== */
@@ -365,11 +354,10 @@ window.addEventListener('focus', onWake);
    真实分辨率（Paperwhite 2 = 758×1024）设成固定像素，首屏即铺满。
    换设备时改下面的 DEV_W / DEV_H 即可。 */
 var elWrap = document.getElementById('wrap');
-var elDiag = document.getElementById('diag');
 var landscape = false;           // 横屏开关：点击页面任意处切换
 
-// 兜底常量：PW2 硬件 758×1024；状态栏+操作栏按实机照片估算约占 115px
-var FB_W = 758, CHROME_H = 115, FB_H = 1024 - CHROME_H;
+// 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
+var FB_W = 758, CHROME_H = 115, FB_H = 897;
 
 /* ===================== 视口自适应（实测制） =====================
    不再假设浏览器把布局视口定成多大 —— 每轮实时测量可视区，
@@ -394,21 +382,23 @@ function applyViewport(){
   var hEff = vp.h - top;
   elWrap.style.position = 'fixed';
   elWrap.style.left = '0px';
+  elWrap.style.right = '0px';
+  elWrap.style.overflow = 'hidden';   // 容器内部裁剪，杜绝任何横向溢出滚动条
   if (landscape){
-    // 横屏：正方形画布（短边−4 安全边，防 1px 取整溢出弹滚动条），可视区内垂直居中
-    var side = Math.min(vp.w, hEff) - 4;
+    // 横屏：正方形画布。边长封顶在屏幕宽度 758（绝不超），旋转后水平、
+    // 竖直都不溢出；可视区内垂直居中。即便浏览器报的宽过大也不受影响。
+    var side = Math.min(758, hEff) - 4;
     elWrap.style.width  = side + 'px';
     elWrap.style.height = side + 'px';
     elWrap.style.top    = (top + Math.floor((hEff - side) / 2)) + 'px';
   } else {
-    // 竖屏：精确填满实测可视区（每次都写，切回竖屏时不会残留横屏尺寸）
-    elWrap.style.width  = vp.w + 'px';
+    // 竖屏：宽度用 CSS 100%（= 布局视口宽）。无论浏览器把视口定成多宽、
+    // 或实测值是否失真，容器都精确等于视口宽，不可能产生横向滚动条。
+    // 高度按实测可视高填充（每次都写，切回竖屏时不会残留横屏尺寸）。
+    elWrap.style.width  = '100%';
     elWrap.style.height = hEff + 'px';
     elWrap.style.top    = top + 'px';
   }
-  // 诊断条（校准用，临时）：把实测值直接画在页面上，拍照片即可校准
-  if (elDiag) elDiag.textContent =
-    '视口' + vp.w + '×' + vp.h + (top ? ' 让顶' + top : '') + (landscape ? ' 横' : ' 竖');
   // 强制重排，提示老 WebKit 重新计算布局
   try { window.scrollTo(0, 0); } catch(e){}
 }
