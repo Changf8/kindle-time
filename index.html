@@ -91,6 +91,8 @@
     position: fixed;
     top: 50%;
     left: 50%;
+    -webkit-transform: translate(-50%, -50%) rotate(-90deg);
+    -webkit-transform-origin: 50% 50%;
     transform: translate(-50%, -50%) rotate(-90deg);
     transform-origin: center center;
   }
@@ -148,11 +150,11 @@
     padding: 0;
   }
   body.landscape .time { font-size: 270px; }
-  /* 横屏信息字号：左右两栏各约 420px 宽，缩到单行不换行的大小 */
+  /* 横屏信息字号：左右两栏各约 379px 宽，缩到单行不换行的大小 */
   body.landscape .date,
   body.landscape .lunar,
   body.landscape .motto {
-    font-size: 28px;
+    font-size: 26px;
     letter-spacing: 1px;
     white-space: nowrap;
   }
@@ -369,8 +371,10 @@ function applyViewport(){
   if (!elWrap) return;
   var vh = readVH();
   if (landscape){
-    /* 横屏画布：宽=可视高 vh（旋转后变屏幕高），高=屏幕宽 DEV_W（旋转后变屏幕宽） */
-    elWrap.style.width  = vh + 'px';
+    /* 横屏画布：正方形 758×758。宽度不得超过布局视口（758px）——
+       若画布宽于视口（如 vh=840），PW2 老 WebKit 会把整页缩小适配，
+       导致内容整体变小、缩在屏幕中间；旋转后 758 恰好铺满屏幕宽度 */
+    elWrap.style.width  = DEV_W + 'px';
     elWrap.style.height = DEV_W + 'px';
   } else {
     elWrap.style.width  = DEV_W + 'px';
