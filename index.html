@@ -133,24 +133,22 @@
     width: 2px;
     background: #000000;
   }
-  /* 主区（屏幕上方）：时间居中最大化。
-     注意：不能写 height:100% —— 绝对定位下它会覆盖 bottom:200px，
-     使居中发生在 754px 的错误盒子里，时间块会被推下去压住分割线 */
+  /* 主区（屏幕上方）：时间竖直居中。
+     必须写显式 height（754-554）：老 WebKit 对 top/bottom 推导的隐式高度
+     不解析 cell 的 height:100%，导致 vertical-align:middle 失效；
+     信息带（显式 height:200px）居中一直正常，用同一套已验证模式 */
   body.landscape .zone-time {
-    top: 0; bottom: 200px; left: 0; right: 0;
+    top: 0; left: 0; right: 0;
+    height: 554px;               /* 与分割线（top:554px）对齐，改分割线位置时同步改 */
+    display: table; width: 100%;
     position: absolute;
     overflow: hidden;            /* 裁剪任何微小溢出，杜绝滚动条 */
-    text-align: center;
   }
-  /* 时间块在“屏幕边 ↔ 分割线”之间的空间内竖直居中：
-     经典 top:50% + translateY(-50%) 居中法（带 -webkit- 前缀，PW2 老内核支持） */
   body.landscape .zone-time > .cell {
-    position: absolute;
-    top: 50%; left: 0; right: 0;
-    display: block;
-    -webkit-transform: translateY(-50%);
-    transform: translateY(-50%);
+    display: table-cell;
+    vertical-align: middle;
     text-align: center;
+    height: 100%;
     padding: 0;
   }
   /* 时间块：font-size 是数字大小基准；若横向超过画布宽，
