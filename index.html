@@ -112,7 +112,7 @@
   body.landscape .zone-top,
   body.landscape .zone-bottom {
     display: table;
-    top: 558px; height: 200px;
+    top: 554px; height: 200px;
     text-align: center;
   }
   body.landscape .zone-bottom { left: 0;   width: 50%; }   /* 左：日期 + 农历 */
@@ -133,10 +133,12 @@
     width: 2px;
     background: #000000;
   }
-  /* 主区（屏幕上方）：时间居中最大化 */
+  /* 主区（屏幕上方）：时间居中最大化。
+     注意：不能写 height:100% —— 绝对定位下它会覆盖 bottom:200px，
+     使居中发生在 754px 的错误盒子里，时间块会被推下去压住分割线 */
   body.landscape .zone-time {
     top: 0; bottom: 200px; left: 0; right: 0;
-    display: table; width: 100%; height: 100%;
+    display: table; width: 100%;
     position: absolute;
   }
   body.landscape .zone-time > .cell {
@@ -146,14 +148,12 @@
     height: 100%;
     padding: 0;
   }
-  /* 时间块最大化：字号按高度给足（高度余量大），横向宽度若超画布
-     由 JS 实测 offsetWidth 后用 scaleX 精确压到可用宽——数字呈
-     七段码数码管典型的“高瘦”比例，视觉尺寸最大化且绝不溢出 */
+  /* 时间块：font-size 是数字大小基准；若横向超过画布宽，
+     JS（fitTime）会自动把 font-size 缩到刚好占满可用宽，绝不裁切。
+     padding 是黑块内边距：上下 24 / 左右 10 */
   body.landscape .time {
     font-size: 260px;
     padding: 24px 10px;
-    -webkit-transform-origin: 50% 50%;
-    transform-origin: 50% 50%;
   }
   /* 横屏信息字号：左右两栏各约 379px 宽，缩到单行不换行的大小 */
   body.landscape .date,
@@ -168,7 +168,7 @@
   body.landscape .box::after {
     content: "";
     position: absolute;
-    top: 558px; left: 0; right: 0;
+    top: 554px; left: 0; right: 0;
     height: 2px;
     background: #000000;
     z-index: 5;
@@ -365,6 +365,8 @@ var landscape = false;           // 横屏开关：点击页面任意处切换
 
 // 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
 var FB_W = 758, CHROME_H = 115, FB_H = 897;
+var TIME_FONT = 260;             // ← 横屏时间数字大小基准（px）。想调大/调小改这里，
+                                 //    并同步改 CSS 里 body.landscape .time 的 font-size
 
 /* ===================== 视口自适应（实测制） =====================
    不再假设浏览器把布局视口定成多大 —— 每轮实时测量可视区，
@@ -380,22 +382,18 @@ function measureVP(){
   if (!(h >= 300 && h <= 1200)) h = FB_H;
   return { w: w, h: h };
 }
-/* 横屏时间块横向适配：字号按高度给足后，实测布局宽（offsetWidth，
-   不受 transform 影响），用 scaleX 精确压到画布可用宽。数字变高瘦、
-   占满宽度；竖屏恢复不缩放。 */
+/* 横屏时间块适配：先按基准字号 TIME_FONT 渲染，实测布局宽 offsetWidth，
+   若超可用宽就把 font-size 直接缩到刚好占满（改字号而非 transform，
+   老 WebKit 必定支持）。竖屏恢复 CSS 默认字号。 */
 function fitTime(){
   if (!elTime) return;
-  var s = 1;
-  if (landscape && elWrap){
-    var avail = elWrap.clientWidth - 8;   // 留 8px 安全边
-    var w = elTime.offsetWidth;
-    if (w > 0 && avail > 0 && w > avail) s = avail / w;
+  if (!landscape || !elWrap){ elTime.style.fontSize = ''; return; }
+  var avail = elWrap.clientWidth - 8;      // ← 左右共留 8px 安全边，想更贴边就改小
+  elTime.style.fontSize = TIME_FONT + 'px';
+  var w = elTime.offsetWidth;
+  if (w > avail && w > 0){
+    elTime.style.fontSize = Math.floor(TIME_FONT * avail / w) + 'px';
   }
-  var t = (s < 1) ? ('scaleX(' + s.toFixed(4) + ')') : '';
-  try {
-    elTime.style.webkitTransform = t;
-    elTime.style.transform = t;
-  } catch(e){}
 }
 function applyViewport(){
   if (!elWrap) return;
