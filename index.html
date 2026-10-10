@@ -138,14 +138,19 @@
      使居中发生在 754px 的错误盒子里，时间块会被推下去压住分割线 */
   body.landscape .zone-time {
     top: 0; bottom: 200px; left: 0; right: 0;
-    display: table; width: 100%;
     position: absolute;
-  }
-  body.landscape .zone-time > .cell {
-    display: table-cell;
-    vertical-align: middle;
+    overflow: hidden;            /* 裁剪任何微小溢出，杜绝滚动条 */
     text-align: center;
-    height: 100%;
+  }
+  /* 时间块在“屏幕边 ↔ 分割线”之间的空间内竖直居中：
+     经典 top:50% + translateY(-50%) 居中法（带 -webkit- 前缀，PW2 老内核支持） */
+  body.landscape .zone-time > .cell {
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    display: block;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    text-align: center;
     padding: 0;
   }
   /* 时间块：font-size 是数字大小基准；若横向超过画布宽，
