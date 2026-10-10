@@ -367,24 +367,14 @@ var elTime = document.getElementById('time');
 var landscape = false;           // 横屏开关：点击页面任意处切换
 
 // 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
-var FB_W = 758, CHROME_H = 115, FB_H = 897;
+var DEV_W = 758, FB_H = 897;
 var TIME_FONT = 260;             // ← 横屏时间数字大小基准（px）。想调大/调小改这里，
                                  //    并同步改 CSS 里 body.landscape .time 的 font-size
 
-/* ===================== 视口自适应（实测制） =====================
-   不再假设浏览器把布局视口定成多大 —— 每轮实时测量可视区，
-   让容器精确填满实测值。浏览器视口定成多大都严丝合缝：
-   永远不出滚动条、不四周留白；首屏报错值由多次重测纠正。 */
-function measureVP(){
-  var w = 0, h = 0;
-  try {
-    w = document.documentElement.clientWidth  || window.innerWidth  || 0;
-    h = document.documentElement.clientHeight || window.innerHeight || 0;
-  } catch(e){ w = 0; h = 0; }
-  if (!(w >= 300 && w <= 1200)) w = FB_W;   // 明显是首屏错值 → 兜底
-  if (!(h >= 300 && h <= 1200)) h = FB_H;
-  return { w: w, h: h };
-}
+/* ===================== 视口尺寸 =====================
+   容器尺寸全部用确定性常量（PW2 实测可视区 758×897），
+   不读实时测量值：点切换时地址栏闪烁会让 clientHeight 在
+   897(工具栏显示)/1024(隐藏) 间跳动，容器尺寸与可视区错位会冒滚动条。 */
 /* 横屏时间块适配：先按基准字号 TIME_FONT 渲染，实测布局宽 offsetWidth，
    若超可用宽就把 font-size 直接缩到刚好占满（改字号而非 transform，
    老 WebKit 必定支持）。竖屏恢复 CSS 默认字号。 */
@@ -400,27 +390,25 @@ function fitTime(){
 }
 function applyViewport(){
   if (!elWrap) return;
-  var vp = measureVP();
-  // 工具栏两种情形自动区分：浮层盖在页面上（视口仍报整屏 1024 一类）
-  // → 顶部让出 CHROME_H；已从视口扣除（约 910）→ 不重复让。
-  var top = (vp.h >= 980) ? CHROME_H : 0;
-  var hEff = vp.h - top;
+  // 容器尺寸全部用确定性常量，不读实时测量值 —— 否则点切换时地址栏闪烁，
+  // clientHeight 在 897(工具栏显示)/1024(隐藏) 间跳动，容器尺寸与可视区错位，
+  // 老 WebKit 把 fixed 当 absolute 处理，冒出滚动条。
+  // FB_H=897 同时 ≤ 工具栏显示态(897) 与隐藏态(1024)：工具栏怎么闪都不溢出。
+  var hEff = FB_H, top = 0;
   elWrap.style.position = 'fixed';
   elWrap.style.left = '0px';
   elWrap.style.right = '0px';
   elWrap.style.overflow = 'hidden';   // 容器内部裁剪，杜绝任何横向溢出滚动条
   if (landscape){
-    // 横屏：正方形画布。边长封顶在屏幕宽度 758（绝不超），旋转后水平、
-    // 竖直都不溢出；可视区内垂直居中。即便浏览器报的宽过大也不受影响。
-    var side = Math.min(758, hEff) - 4;
+    // 横屏：正方形画布边长 754（≤ 屏幕宽 758，旋转后水平/竖直都不溢出），
+    // 在 897 高可视区内垂直居中。
+    var side = Math.min(DEV_W, FB_H) - 4;   // 754
     elWrap.style.width  = side + 'px';
     elWrap.style.height = side + 'px';
-    elWrap.style.top    = (top + Math.floor((hEff - side) / 2)) + 'px';
+    elWrap.style.top    = Math.floor((hEff - side) / 2) + 'px';
   } else {
-    // 竖屏：宽度用 CSS 100%（= 布局视口宽）。无论浏览器把视口定成多宽、
-    // 或实测值是否失真，容器都精确等于视口宽，不可能产生横向滚动条。
-    // 高度按实测可视高填充（每次都写，切回竖屏时不会残留横屏尺寸）。
-    elWrap.style.width  = '100%';
+    // 竖屏：宽高固定 758×897（< 视口，恒不溢出）。切回竖屏时也不会残留横屏尺寸。
+    elWrap.style.width  = DEV_W + 'px';
     elWrap.style.height = hEff + 'px';
     elWrap.style.top    = top + 'px';
   }
