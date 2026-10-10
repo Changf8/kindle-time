@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=758, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
 <style>@viewport { width: 758px; }</style>
 <title>Kindle 时钟</title>
 <style>
@@ -334,8 +334,9 @@ function requestWakeLock(){
   } catch (e) { /* 老浏览器直接抛错也忽略 */ }
 }
 
-// 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁
+// 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁 + 重估缩放
 function onWake(){
+  refreshViewportMeta();
   applyViewport();
   render();
   requestWakeLock();
@@ -398,7 +399,21 @@ document.addEventListener('click', toggleMode);
 window.addEventListener('resize', applyViewport);
 // 加载后分多次（含 0.3s/1s/3s）尝试，覆盖首屏视口滞后的窗口
 
-function bootFix(){ applyViewport(); }
+// 强制重估缩放：PW2 老浏览器在横竖切换/刷新后可能残留上一次的缩小状态
+// （整页变小、四周留白）。动态改写一次 viewport meta，逼老 WebKit 重新
+// 按 initial-scale=1 计算缩放。两种写法交替，避免相同字符串被优化跳过。
+var vpMeta = null;
+try { vpMeta = document.querySelector('meta[name="viewport"]'); } catch(e){ vpMeta = null; }
+var vpFlip = false;
+function refreshViewportMeta(){
+  if (!vpMeta) return;
+  vpFlip = !vpFlip;
+  vpMeta.setAttribute('content', vpFlip
+    ? 'width=758, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, target-densitydpi=device-dpi'
+    : 'width=758, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi');
+}
+
+function bootFix(){ refreshViewportMeta(); applyViewport(); }
 bootFix();
 setTimeout(bootFix, 300);
 setTimeout(bootFix, 1000);
