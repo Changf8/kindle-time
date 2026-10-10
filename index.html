@@ -357,7 +357,8 @@ var DEV_W = 758, DEV_H = 1024;   // 屏幕物理分辨率；换设备请同步�
 var SAFE_H = 840;                // 可视高度保守值：浏览器顶部地址栏/工具栏约占 180px
 var SAFE_TOP = 60;               // 顶部状态栏+操作栏（浏览器浮层，始终压在页面上方）预留高度；
                                  // 旋转后内容上沿会顶到这条浮层，预留后可避免被遮挡。按实机测量调大/调小
-var lastH = 0;
+var LAND_SIZE = DEV_W - 4;       // 横屏画布边长：比视口窄 4px。老 WebKit 对旋转后 1px 级
+                                 // 取整溢出也会弹横向滚动条，留安全边彻底避免
 var landscape = false;           // 横屏开关：点击页面任意处切换
 
 // 读取真实可视高度；首屏常报错值（如整屏 1024），检测不到就用保守值
@@ -375,17 +376,14 @@ function applyViewport(){
   elWrap.style.left = '0px';
   elWrap.style.top  = SAFE_TOP + 'px';
   if (landscape){
-    /* 横屏画布：正方形 758×758。宽度不得超过布局视口（758px）——
-       若画布宽于视口（如 vh=840），PW2 老 WebKit 会把整页缩小适配，
-       导致内容整体变小、缩在屏幕中间；旋转后 758 恰好铺满屏幕宽度 */
-    elWrap.style.width  = DEV_W + 'px';
-    elWrap.style.height = DEV_W + 'px';
+    /* 横屏画布 754×754：宽不得超过布局视口（758px），否则 PW2 老 WebKit
+       会整页缩小适配（内容变小缩在一角）；旋转后恰铺满屏幕宽度 */
+    elWrap.style.width  = LAND_SIZE + 'px';
+    elWrap.style.height = LAND_SIZE + 'px';
   } else {
+    // 每次都写高度：从横屏切回时必须把 758 的高恢复成可视高，否则残留
     elWrap.style.width  = DEV_W + 'px';
-    if (vh !== lastH) {            // 高度变化才写样式，避免墨水屏无谓重绘
-      elWrap.style.height = (vh - SAFE_TOP) + 'px';
-      lastH = vh;
-    }
+    elWrap.style.height = (vh - SAFE_TOP) + 'px';
   }
   // 强制重排，提示老 WebKit 重新计算布局
   try { window.scrollTo(0, 0); } catch(e){}
