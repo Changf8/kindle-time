@@ -2,13 +2,24 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<style>@viewport { width: 758px; }</style>
 <title>Kindle 时钟</title>
 <style>
+  /* DSEG7 Classic Bold（SIL OFL 1.0，作者 keshikan）七段码字体，
+     已裁剪至仅含数字/冒号/连字符并 base64 内嵌，离线可用 */
+  @font-face {
+    font-family: "DSEG7";
+    src: url(data:font/truetype;charset=utf-8;base64,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) format("truetype");
+    font-weight: normal;
+    font-style: normal;
+  }
+
   html, body {
     margin: 0;
     padding: 0;
     height: 100%;
+    overflow: hidden;   /* 彻底禁止上下/左右滚动 */
     background: #ffffff;
     color: #000000;
     -webkit-text-size-adjust: 100%;
@@ -32,14 +43,9 @@
   }
   /* 格言：居中基础上稍下移；日期农历：居中基础上稍上移。
      改这里的像素值即可微调幅度（如 60px 更明显）。 */
-  .zone-top .cell    { padding-top: 50px; }
-  .zone-bottom .cell { padding-bottom: 60px; }
-  .rule {
-    width: 80%;
-    margin: 0 auto;
-    border-top: 1px solid #000;
-  }
-  .time-wrap { margin: 14px 0; }
+  .zone-top .cell    { padding-top: 40px; }
+  .zone-bottom .cell { padding-bottom: 40px; }
+  .time-wrap { margin: 0; }
 
   .motto {
     font-weight: 600;
@@ -47,10 +53,16 @@
     letter-spacing: 2px;
   }
   .time {
-    font-weight: 700;
-    font-size: 270px;
+    display: inline-block;
+    font-family: "DSEG7", monospace;
+    font-weight: normal;
+    font-size: 200px;
     line-height: 1.0;
-    letter-spacing: 6px;
+    letter-spacing: 0;
+    background: #000000;
+    color: #ffffff;
+    padding: 34px 14px;
+    border-radius: 28px;
   }
   .date {
     font-weight: 600;
@@ -66,23 +78,105 @@
   /* 窄屏（部分固件 viewport 小于 758）兜底，避免溢出 */
   @media (max-width: 600px) {
     .motto { font-size: 36px; }
-    .time  { font-size: 195px; }
+    .time  { font-size: 150px; padding: 8px 20px; border-radius: 20px; }
     .date  { font-size: 51px; }
     .lunar { font-size: 47px; }
+  }
+
+  /* ===================== 横屏（伪横屏） =====================
+     整页逆时针旋转 90° 显示：纯 CSS transform，不依赖设备横屏能力。
+     点页面任意空白处切换。横屏下：时间在上方主区居中最大化，
+     底部信息带（日期+农历在上、格言在下）整宽单行显示，不换行。 */
+  body.landscape #wrap {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    transform-origin: center center;
+  }
+  body.landscape .box {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  body.landscape .zone { display: block; position: absolute; }
+  /* 底部信息带（画布底部一段；旋转后在屏幕下方）：
+     平均分成左右两半——左=日期+农历，右=格言，中间一条竖分割线 */
+  body.landscape .zone-top,
+  body.landscape .zone-bottom {
+    display: table;
+    top: 558px; height: 200px;
+    text-align: center;
+  }
+  body.landscape .zone-bottom { left: 0;   width: 50%; }   /* 左：日期 + 农历 */
+  body.landscape .zone-top    { left: 50%; width: 50%; }   /* 右：格言 */
+  body.landscape .zone-top > .cell,
+  body.landscape .zone-bottom > .cell {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    width: 100%; height: 100%;
+    padding: 0;
+  }
+  /* 左右半之间的细分割线（画布里是左半的右缘竖线，旋转后在屏幕里为竖直线） */
+  body.landscape .zone-bottom::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 2px;
+    background: #000000;
+  }
+  body.landscape .zone-top > .cell,
+  body.landscape .zone-bottom > .cell {
+    display: block;
+    width: 100%; height: 100%;
+    text-align: center;
+    padding: 0;
+  }
+  /* 主区（屏幕上方）：时间居中最大化 */
+  body.landscape .zone-time {
+    top: 0; bottom: 200px; left: 0; right: 0;
+    display: table; width: 100%; height: 100%;
+    position: absolute;
+  }
+  body.landscape .zone-time > .cell {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    height: 100%;
+    padding: 0;
+  }
+  body.landscape .time { font-size: 270px; }
+  /* 横屏信息字号：左右两栏各约 420px 宽，缩到单行不换行的大小 */
+  body.landscape .date,
+  body.landscape .lunar,
+  body.landscape .motto {
+    font-size: 28px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  body.landscape .lunar { margin-top: 8px; }
+  /* 时间与信息带之间的细分割线（画布里是水平线，旋转后在屏幕里为竖直线） */
+  body.landscape .box::after {
+    content: "";
+    position: absolute;
+    top: 558px; left: 0; right: 0;
+    height: 2px;
+    background: #000000;
+    z-index: 5;
   }
 </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" id="wrap">
     <div class="box">
       <div class="zone zone-top">
         <div class="cell"><div class="motto">临渊羡鱼，不如退而结网。</div></div>
       </div>
       <div class="zone zone-time">
         <div class="cell">
-          <div class="rule"></div>
           <div class="time-wrap"><div class="time" id="time">--:--</div></div>
-          <div class="rule"></div>
         </div>
       </div>
       <div class="zone zone-bottom">
@@ -242,6 +336,7 @@ function requestWakeLock(){
 
 // 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁
 function onWake(){
+  applyViewport();
   render();
   requestWakeLock();
 }
@@ -251,10 +346,63 @@ document.addEventListener('visibilitychange', function(){
 window.addEventListener('pageshow', onWake);   // 从缓存/锁屏恢复
 window.addEventListener('focus', onWake);
 
+/* ===================== 首屏铺满修复 =====================
+   Kindle Paperwhite 2 的实验性浏览器首屏把布局视口判定成错值，
+   连 window.innerWidth/innerHeight 在首屏也是错的，要等约一分钟后
+   一次全屏刷新才正确。所以这里不再读窗口尺寸，直接把容器按本机
+   真实分辨率（Paperwhite 2 = 758×1024）设成固定像素，首屏即铺满。
+   换设备时改下面的 DEV_W / DEV_H 即可。 */
+var elWrap = document.getElementById('wrap');
+var DEV_W = 758, DEV_H = 1024;   // 屏幕物理分辨率；换设备请同步修改
+var SAFE_H = 840;                // 可视高度保守值：浏览器顶部地址栏/工具栏约占 180px
+var lastH = 0;
+var landscape = false;           // 横屏开关：点击页面任意处切换
+
+// 读取真实可视高度；首屏常报错值（如整屏 1024），检测不到就用保守值
+function readVH(){
+  var vh = 0;
+  try { vh = document.documentElement.clientHeight || 0; } catch(e){ vh = 0; }
+  if (!(vh >= 400 && vh < DEV_H)) vh = SAFE_H;
+  return vh;
+}
+function applyViewport(){
+  if (!elWrap) return;
+  var vh = readVH();
+  if (landscape){
+    /* 横屏画布：宽=可视高 vh（旋转后变屏幕高），高=屏幕宽 DEV_W（旋转后变屏幕宽） */
+    elWrap.style.width  = vh + 'px';
+    elWrap.style.height = DEV_W + 'px';
+  } else {
+    elWrap.style.width  = DEV_W + 'px';
+    if (vh !== lastH) {            // 高度变化才写样式，避免墨水屏无谓重绘
+      elWrap.style.height = vh + 'px';
+      lastH = vh;
+    }
+  }
+  // 强制重排，提示老 WebKit 重新计算布局
+  try { window.scrollTo(0, 0); } catch(e){}
+}
+// 点击页面任意空白处：竖屏 <-> 横屏 切换
+function toggleMode(){
+  landscape = !landscape;
+  document.body.classList.toggle('landscape', landscape);
+  applyViewport();
+}
+document.addEventListener('click', toggleMode);
+window.addEventListener('resize', applyViewport);
+// 加载后分多次（含 0.3s/1s/3s）尝试，覆盖首屏视口滞后的窗口
+
+function bootFix(){ applyViewport(); }
+bootFix();
+setTimeout(bootFix, 300);
+setTimeout(bootFix, 1000);
+setTimeout(bootFix, 3000);
+
 render();
+applyViewport();
 requestWakeLock();
 // 每秒检查一次，但只有分钟/日期变了才重绘，避免无谓黑闪
-setInterval(render, 1000);
+setInterval(function(){ applyViewport(); render(); }, 1000);
 </script>
 </body>
 </html>
