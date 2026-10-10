@@ -2,8 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=758, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
-<style>@viewport { width: 758px; }</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <title>Kindle 时钟</title>
 <style>
   /* DSEG7 Classic Bold（SIL OFL 1.0，作者 keshikan）七段码字体，
@@ -18,7 +17,9 @@
   html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
+    /* 注意：绝不给 html/body 设 height:100% —— 若文档高度被撑到整屏
+       1024 而可视区只有约 910，老 WebKit 会按"可视高÷文档高"整页缩小
+       适配（四周留白、内容变小）。容器尺寸全部由 JS 实测后写入。 */
     overflow: hidden;   /* 彻底禁止上下/左右滚动 */
     background: #ffffff;
     color: #000000;
@@ -166,6 +167,15 @@
     background: #000000;
     z-index: 5;
   }
+  /* 实测诊断条（校准用，临时）：显示浏览器实测视口与当前模式 */
+  .diag {
+    position: fixed;
+    left: 6px; bottom: 4px;
+    font-size: 22px;
+    color: #999999;
+    letter-spacing: 1px;
+    z-index: 50;
+  }
 </style>
 </head>
 <body>
@@ -187,6 +197,8 @@
       </div>
     </div>
   </div>
+
+  <div class="diag" id="diag"></div>
 
 <script>
 /* ===================== 农历 / 生肖 换算（1900–2100，离线内置） ===================== */
@@ -334,9 +346,8 @@ function requestWakeLock(){
   } catch (e) { /* 老浏览器直接抛错也忽略 */ }
 }
 
-// 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁 + 重估缩放
+// 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁 + 重测视口
 function onWake(){
-  refreshViewportMeta();
   applyViewport();
   render();
   requestWakeLock();
@@ -354,38 +365,50 @@ window.addEventListener('focus', onWake);
    真实分辨率（Paperwhite 2 = 758×1024）设成固定像素，首屏即铺满。
    换设备时改下面的 DEV_W / DEV_H 即可。 */
 var elWrap = document.getElementById('wrap');
-var DEV_W = 758, DEV_H = 1024;   // 屏幕物理分辨率；换设备请同步修改
-var SAFE_H = 840;                // 可视高度保守值：浏览器顶部地址栏/工具栏约占 180px
-var SAFE_TOP = 60;               // 顶部状态栏+操作栏（浏览器浮层，始终压在页面上方）预留高度；
-                                 // 旋转后内容上沿会顶到这条浮层，预留后可避免被遮挡。按实机测量调大/调小
-var LAND_SIZE = DEV_W - 4;       // 横屏画布边长：比视口窄 4px。老 WebKit 对旋转后 1px 级
-                                 // 取整溢出也会弹横向滚动条，留安全边彻底避免
+var elDiag = document.getElementById('diag');
 var landscape = false;           // 横屏开关：点击页面任意处切换
 
-// 读取真实可视高度；首屏常报错值（如整屏 1024），检测不到就用保守值
-function readVH(){
-  var vh = 0;
-  try { vh = document.documentElement.clientHeight || 0; } catch(e){ vh = 0; }
-  if (!(vh >= 400 && vh < DEV_H)) vh = SAFE_H;
-  return vh;
+// 兜底常量：PW2 硬件 758×1024；状态栏+操作栏按实机照片估算约占 115px
+var FB_W = 758, CHROME_H = 115, FB_H = 1024 - CHROME_H;
+
+/* ===================== 视口自适应（实测制） =====================
+   不再假设浏览器把布局视口定成多大 —— 每轮实时测量可视区，
+   让容器精确填满实测值。浏览器视口定成多大都严丝合缝：
+   永远不出滚动条、不四周留白；首屏报错值由多次重测纠正。 */
+function measureVP(){
+  var w = 0, h = 0;
+  try {
+    w = document.documentElement.clientWidth  || window.innerWidth  || 0;
+    h = document.documentElement.clientHeight || window.innerHeight || 0;
+  } catch(e){ w = 0; h = 0; }
+  if (!(w >= 300 && w <= 1200)) w = FB_W;   // 明显是首屏错值 → 兜底
+  if (!(h >= 300 && h <= 1200)) h = FB_H;
+  return { w: w, h: h };
 }
 function applyViewport(){
   if (!elWrap) return;
-  var vh = readVH();
-  // 容器固定定位于左上角，统一让出顶部 SAFE_TOP 给状态栏/操作栏浮层
+  var vp = measureVP();
+  // 工具栏两种情形自动区分：浮层盖在页面上（视口仍报整屏 1024 一类）
+  // → 顶部让出 CHROME_H；已从视口扣除（约 910）→ 不重复让。
+  var top = (vp.h >= 980) ? CHROME_H : 0;
+  var hEff = vp.h - top;
   elWrap.style.position = 'fixed';
   elWrap.style.left = '0px';
-  elWrap.style.top  = SAFE_TOP + 'px';
   if (landscape){
-    /* 横屏画布 754×754：宽不得超过布局视口（758px），否则 PW2 老 WebKit
-       会整页缩小适配（内容变小缩在一角）；旋转后恰铺满屏幕宽度 */
-    elWrap.style.width  = LAND_SIZE + 'px';
-    elWrap.style.height = LAND_SIZE + 'px';
+    // 横屏：正方形画布（短边−4 安全边，防 1px 取整溢出弹滚动条），可视区内垂直居中
+    var side = Math.min(vp.w, hEff) - 4;
+    elWrap.style.width  = side + 'px';
+    elWrap.style.height = side + 'px';
+    elWrap.style.top    = (top + Math.floor((hEff - side) / 2)) + 'px';
   } else {
-    // 每次都写高度：从横屏切回时必须把 758 的高恢复成可视高，否则残留
-    elWrap.style.width  = DEV_W + 'px';
-    elWrap.style.height = (vh - SAFE_TOP) + 'px';
+    // 竖屏：精确填满实测可视区（每次都写，切回竖屏时不会残留横屏尺寸）
+    elWrap.style.width  = vp.w + 'px';
+    elWrap.style.height = hEff + 'px';
+    elWrap.style.top    = top + 'px';
   }
+  // 诊断条（校准用，临时）：把实测值直接画在页面上，拍照片即可校准
+  if (elDiag) elDiag.textContent =
+    '视口' + vp.w + '×' + vp.h + (top ? ' 让顶' + top : '') + (landscape ? ' 横' : ' 竖');
   // 强制重排，提示老 WebKit 重新计算布局
   try { window.scrollTo(0, 0); } catch(e){}
 }
@@ -397,27 +420,13 @@ function toggleMode(){
 }
 document.addEventListener('click', toggleMode);
 window.addEventListener('resize', applyViewport);
-// 加载后分多次（含 0.3s/1s/3s）尝试，覆盖首屏视口滞后的窗口
-
-// 强制重估缩放：PW2 老浏览器在横竖切换/刷新后可能残留上一次的缩小状态
-// （整页变小、四周留白）。动态改写一次 viewport meta，逼老 WebKit 重新
-// 按 initial-scale=1 计算缩放。两种写法交替，避免相同字符串被优化跳过。
-var vpMeta = null;
-try { vpMeta = document.querySelector('meta[name="viewport"]'); } catch(e){ vpMeta = null; }
-var vpFlip = false;
-function refreshViewportMeta(){
-  if (!vpMeta) return;
-  vpFlip = !vpFlip;
-  vpMeta.setAttribute('content', vpFlip
-    ? 'width=758, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, target-densitydpi=device-dpi'
-    : 'width=758, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi');
-}
-
-function bootFix(){ refreshViewportMeta(); applyViewport(); }
+// 加载后分多次重测（覆盖首屏视口滞后的窗口，实测值变了对齐也跟着变）
+function bootFix(){ applyViewport(); }
 bootFix();
 setTimeout(bootFix, 300);
 setTimeout(bootFix, 1000);
 setTimeout(bootFix, 3000);
+setTimeout(bootFix, 6000);
 
 render();
 applyViewport();
