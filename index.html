@@ -146,9 +146,15 @@
     height: 100%;
     padding: 0;
   }
-  /* 时间块横向宽度受画布宽 758px 约束（旋转不改变这个约束），
-     270px 会横向溢出触发整页缩小；195px 时块宽约 720px，安全铺满 */
-  body.landscape .time { font-size: 195px; }
+  /* 时间块最大化：字号按高度给足（高度余量大），横向宽度若超画布
+     由 JS 实测 offsetWidth 后用 scaleX 精确压到可用宽——数字呈
+     七段码数码管典型的“高瘦”比例，视觉尺寸最大化且绝不溢出 */
+  body.landscape .time {
+    font-size: 260px;
+    padding: 24px 10px;
+    -webkit-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+  }
   /* 横屏信息字号：左右两栏各约 379px 宽，缩到单行不换行的大小 */
   body.landscape .date,
   body.landscape .lunar,
@@ -354,6 +360,7 @@ window.addEventListener('focus', onWake);
    真实分辨率（Paperwhite 2 = 758×1024）设成固定像素，首屏即铺满。
    换设备时改下面的 DEV_W / DEV_H 即可。 */
 var elWrap = document.getElementById('wrap');
+var elTime = document.getElementById('time');
 var landscape = false;           // 横屏开关：点击页面任意处切换
 
 // 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
@@ -372,6 +379,23 @@ function measureVP(){
   if (!(w >= 300 && w <= 1200)) w = FB_W;   // 明显是首屏错值 → 兜底
   if (!(h >= 300 && h <= 1200)) h = FB_H;
   return { w: w, h: h };
+}
+/* 横屏时间块横向适配：字号按高度给足后，实测布局宽（offsetWidth，
+   不受 transform 影响），用 scaleX 精确压到画布可用宽。数字变高瘦、
+   占满宽度；竖屏恢复不缩放。 */
+function fitTime(){
+  if (!elTime) return;
+  var s = 1;
+  if (landscape && elWrap){
+    var avail = elWrap.clientWidth - 8;   // 留 8px 安全边
+    var w = elTime.offsetWidth;
+    if (w > 0 && avail > 0 && w > avail) s = avail / w;
+  }
+  var t = (s < 1) ? ('scaleX(' + s.toFixed(4) + ')') : '';
+  try {
+    elTime.style.webkitTransform = t;
+    elTime.style.transform = t;
+  } catch(e){}
 }
 function applyViewport(){
   if (!elWrap) return;
@@ -399,6 +423,7 @@ function applyViewport(){
     elWrap.style.height = hEff + 'px';
     elWrap.style.top    = top + 'px';
   }
+  fitTime();
   // 强制重排，提示老 WebKit 重新计算布局
   try { window.scrollTo(0, 0); } catch(e){}
 }
