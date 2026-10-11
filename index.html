@@ -157,19 +157,13 @@
     height: 100%;
     padding: 0;
   }
-  /* 时间块：font-size 是数字大小基准；若横向超过画布宽，
-     JS（fitTime）会自动把 font-size 缩到刚好占满可用宽，绝不裁切。
-     padding 是黑块内边距：上下 18 / 左右 4（内边距越小数字越大） */
+  /* 时间块：font-size 只是基准，JS（fitTime）会实测宽度后
+     自动放大/缩小到刚好占满可用宽（左右不留空隙），绝不裁切。
+     padding 是黑块内边距：上下 18 / 左右 0。
+     不竖向拉伸：保持七段数字原始高宽比，在主区内自然竖直居中。 */
   body.landscape .time {
     font-size: 260px;
     padding: 18px 0px;
-    /* 竖向拉伸：允许七段数字被纵向拉长以填满上方主区（不再保持原始高宽比）。
-       scaleY 越大数字越高越瘦。当前 1.6 在 554px 主区内安全不裁切、不压分割线；
-       想更夸张可提到 1.7~1.8（别超过约 1.9，否则黑块顶/底被裁或压到分割线）。 */
-    -webkit-transform: scaleY(1.6);
-    transform: scaleY(1.6);
-    transform-origin: 50% 50%;
-    -webkit-transform-origin: 50% 50%;
   }
   /* 横屏信息字号：基础 32px（放大后与 200px 信息带更协调）。
      左右两栏各约 379px；实际渲染时 JS（fitInfo）实测宽度，
@@ -385,24 +379,38 @@ var landscape = false;           // 横屏开关：点击页面任意处切换
 
 // 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
 var DEV_W = 758, FB_H = 897;
-var TIME_FONT = 260;             // ← 横屏时间数字大小基准（px）。想调大/调小改这里，
-                                 //    并同步改 CSS 里 body.landscape .time 的 font-size
+var TIME_FONT = 260;             // ← 横屏时间数字大小基准（px），fitTime 会在此基础上
+                                 //    自动放大/缩小到刚好占满可用宽
+var TIME_SCALE_Y = 1.0;          // ← 时间竖向拉伸倍数（1=不拉伸，保持原始比例）。与 CSS 里是否有 scaleY 保持一致
+var TIME_ZONE_H = 554;           // ← 横屏时间主区高度（与 CSS 的 zone-time height 一致）
 
 /* ===================== 视口尺寸 =====================
    容器尺寸全部用确定性常量（PW2 实测可视区 758×897），
    不读实时测量值：点切换时地址栏闪烁会让 clientHeight 在
    897(工具栏显示)/1024(隐藏) 间跳动，容器尺寸与可视区错位会冒滚动条。 */
-/* 横屏时间块适配：先按基准字号 TIME_FONT 渲染，实测布局宽 offsetWidth，
-   若超可用宽就把 font-size 直接缩到刚好占满（改字号而非 transform，
-   老 WebKit 必定支持）。竖屏恢复 CSS 默认字号。 */
+/* 横屏时间块适配：先按基准字号 TIME_FONT 渲染并实测布局宽 offsetWidth，
+   然后按比例把 font-size 换算到「刚好占满可用宽」——超宽会缩、不足会放大
+   （宽度与字号成正比，一次换算即可），左右不留空隙。
+   同时受高度上限约束：字号 × 竖向拉伸后不得超过主区高度，防止压到分割线。 */
 function fitTime(){
   if (!elTime) return;
   if (!landscape || !elWrap){ elTime.style.fontSize = ''; return; }
   var avail = elWrap.clientWidth - 2;      // ← 左右共留 2px 安全边（画布本身已比视口窄 2px）
   elTime.style.fontSize = TIME_FONT + 'px';
   var w = elTime.offsetWidth;
-  if (w > avail && w > 0){
-    elTime.style.fontSize = Math.floor(TIME_FONT * avail / w) + 'px';
+  if (w > 0){
+    var fs = Math.floor(TIME_FONT * avail / w);
+    // 高度上限：黑块高 ≈ 字号 + 36(padding)，乘拉伸倍数后要留在主区内（再留 8px 余量）
+    var maxFs = Math.floor(TIME_ZONE_H / TIME_SCALE_Y) - 36 - 8;
+    if (fs > maxFs) fs = maxFs;
+    elTime.style.fontSize = fs + 'px';
+    // 二次校正：取整误差可能仍超 1~2px，逐 px 回缩直到不超
+    w = elTime.offsetWidth;
+    while (w > avail && fs > 10){
+      fs--;
+      elTime.style.fontSize = fs + 'px';
+      w = elTime.offsetWidth;
+    }
   }
 }
 /* 横屏信息带适配：日期/农历/格言按基准字号（CSS 32px）渲染后实测宽度，
