@@ -125,8 +125,9 @@
     width: 100%; height: 100%;
     padding: 0;
   }
-  /* 格言整体往右移一点：右栏 cell 加左内边距（不影响左栏） */
-  body.landscape .zone-top > .cell { padding-left: 24px; }
+  /* 格言整体往右移一点：右栏 cell 加左内边距（不影响左栏）。
+     8px 比之前 24px 收一点，给 30px 字号腾出单行空间 */
+  body.landscape .zone-top > .cell { padding-left: 8px; }
   /* 左右半之间的细分割线（画布里是左半的右缘竖线，旋转后在屏幕里为竖直线）
      bottom: 24px —— 底端不顶到屏幕边，留出空隙 */
   body.landscape .zone-bottom::after {
@@ -159,17 +160,18 @@
      padding 是黑块内边距：上下 18 / 左右 4（内边距越小数字越大） */
   body.landscape .time {
     font-size: 260px;
-    padding: 18px 4px;
+    padding: 18px 0px;
   }
-  /* 横屏信息字号：左右两栏各约 377px 宽。29px 实测单行均不换行：
-     格言 12 字 ≈ 359px、日期 ≈ 323px、农历 ≈ 320px，均留有余量 */
+  /* 横屏信息字号：左右两栏各约 377px 宽。30px 实测单行均不换行：
+     日期 ≈ 335px、农历 ≈ 320px、格言（字距 0）≈ 360px，均留有余量 */
   body.landscape .date,
   body.landscape .lunar,
   body.landscape .motto {
-    font-size: 29px;
+    font-size: 30px;
     letter-spacing: 1px;
     white-space: nowrap;
   }
+  body.landscape .motto { letter-spacing: 0; }   /* 取消字距，30px 仍能单行放下 */
   body.landscape .lunar { margin-top: 8px; }
   /* 时间与信息带之间的细分割线（画布里是水平线，旋转后在屏幕里为竖直线） */
   body.landscape .box::after {
@@ -385,7 +387,7 @@ var TIME_FONT = 260;             // ← 横屏时间数字大小基准（px）�
 function fitTime(){
   if (!elTime) return;
   if (!landscape || !elWrap){ elTime.style.fontSize = ''; return; }
-  var avail = elWrap.clientWidth - 4;      // ← 左右共留 4px 安全边（画布本身已比视口窄 4px）
+  var avail = elWrap.clientWidth - 2;      // ← 左右共留 2px 安全边（画布本身已比视口窄 2px）
   elTime.style.fontSize = TIME_FONT + 'px';
   var w = elTime.offsetWidth;
   if (w > avail && w > 0){
@@ -404,9 +406,9 @@ function applyViewport(){
   elWrap.style.right = '0px';
   elWrap.style.overflow = 'hidden';   // 容器内部裁剪，杜绝任何横向溢出滚动条
   if (landscape){
-    // 横屏：正方形画布边长 754（≤ 屏幕宽 758，旋转后水平/竖直都不溢出），
+    // 横屏：正方形画布边长 756（≤ 屏幕宽 758，旋转后水平/竖直都不溢出），
     // 在 897 高可视区内垂直居中。
-    var side = Math.min(DEV_W, FB_H) - 4;   // 754
+    var side = Math.min(DEV_W, FB_H) - 2;   // 756（仍 < 视口 758，不触发滚动条）
     elWrap.style.width  = side + 'px';
     elWrap.style.height = side + 'px';
     elWrap.style.top    = Math.floor((hEff - side) / 2) + 'px';
