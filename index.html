@@ -125,6 +125,11 @@
     width: 100%; height: 100%;
     padding: 0;
   }
+  /* 与竖分割线的距离左右一致：左栏文字右对齐、右栏文字左对齐（镜像对称），
+     间距均为 16px，与文字宽度无关，恒定相等。
+     想调这个距离：改下面两处 padding 的 16px（保持两边相等） */
+  body.landscape .zone-bottom > .cell { text-align: right; padding-right: 16px; }
+  body.landscape .zone-top    > .cell { text-align: left;  padding-left: 16px; }
   /* 左右半之间的细分割线（画布里是左半的右缘竖线，旋转后在屏幕里为竖直线）
      bottom: 24px —— 底端不顶到屏幕边，留出空隙 */
   body.landscape .zone-bottom::after {
@@ -411,9 +416,9 @@ function fitInfo(){
     return;
   }
   var base = 32;                            // ← 与 CSS 里 body.landscape 的信息字号保持一致
-  // 左栏：日期 + 农历（同一 cell，无内边距，留 4px 安全边）
+  // 左栏：日期 + 农历（cell 有 16px 右内边距贴分割线，留 4px 安全边）
   var cellL = elDate.parentNode;
-  var availL = cellL.clientWidth - 4;
+  var availL = cellL.clientWidth - 20;      // 16 内边距 + 4 安全边
   elDate.style.fontSize = base + 'px';
   elLunar.style.fontSize = base + 'px';
   var wL = elDate.offsetWidth;
@@ -422,9 +427,9 @@ function fitInfo(){
     elDate.style.fontSize  = fsL;
     elLunar.style.fontSize = fsL;
   }
-  // 右栏：格言（cell 无内边距，留 4px 安全边）
+  // 右栏：格言（cell 有 16px 左内边距贴分割线，留 4px 安全边）
   var cellR = elMotto.parentNode;
-  var availR = cellR.clientWidth - 4;
+  var availR = cellR.clientWidth - 20;      // 16 内边距 + 4 安全边
   elMotto.style.fontSize = base + 'px';
   var wR = elMotto.offsetWidth;
   if (wR > availR && wR > 0 && availR > 0){
