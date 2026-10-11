@@ -115,8 +115,8 @@
     top: 554px; height: 200px;
     text-align: center;
   }
-  body.landscape .zone-bottom { left: 0;   width: 50%; }   /* 左：日期 + 农历 */
-  body.landscape .zone-top    { left: 50%; width: 50%; }   /* 右：格言 */
+  body.landscape .zone-bottom { left: 0;   width: 46%; }   /* 左：日期 + 农历 */
+  body.landscape .zone-top    { left: 46%; width: 54%; }   /* 右：格言（略宽，给 30px 单行留余量） */
   body.landscape .zone-top > .cell,
   body.landscape .zone-bottom > .cell {
     display: table-cell;
@@ -125,9 +125,9 @@
     width: 100%; height: 100%;
     padding: 0;
   }
-  /* 格言整体往右移一点：右栏 cell 加左内边距（不影响左栏）。
-     8px 比之前 24px 收一点，给 30px 字号腾出单行空间 */
-  body.landscape .zone-top > .cell { padding-left: 8px; }
+  /* 格言整体往右移一点：右栏 cell 加左内边距（不影响左栏），
+     并配合右栏加宽到 54%，30px 字号仍单行不换行且有余量 */
+  body.landscape .zone-top > .cell { padding-left: 24px; }
   /* 左右半之间的细分割线（画布里是左半的右缘竖线，旋转后在屏幕里为竖直线）
      bottom: 24px —— 底端不顶到屏幕边，留出空隙 */
   body.landscape .zone-bottom::after {
@@ -161,6 +161,13 @@
   body.landscape .time {
     font-size: 260px;
     padding: 18px 0px;
+    /* 竖向拉伸：允许七段数字被纵向拉长以填满上方主区（不再保持原始高宽比）。
+       scaleY 越大数字越高越瘦。当前 1.6 在 554px 主区内安全不裁切、不压分割线；
+       想更夸张可提到 1.7~1.8（别超过约 1.9，否则黑块顶/底被裁或压到分割线）。 */
+    -webkit-transform: scaleY(1.6);
+    transform: scaleY(1.6);
+    transform-origin: 50% 50%;
+    -webkit-transform-origin: 50% 50%;
   }
   /* 横屏信息字号：左右两栏各约 377px 宽。30px 实测单行均不换行：
      日期 ≈ 335px、农历 ≈ 320px、格言（字距 0）≈ 360px，均留有余量 */
