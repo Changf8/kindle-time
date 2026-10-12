@@ -204,7 +204,7 @@
   <div class="wrap" id="wrap">
     <div class="box">
       <div class="zone zone-top">
-        <div class="cell"><input class="motto" id="motto" type="text" value="临渊羡鱼，不如退而结网。" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+        <div class="cell"><input class="motto" id="motto" type="text" readonly="readonly" value="临渊羡鱼，不如退而结网。"></div>
       </div>
       <div class="zone zone-time">
         <div class="cell">
@@ -419,43 +419,29 @@ function fitMotto(avail, base, ls){
 }
 
 /* ===================== 格言可编辑 + 本地持久化 =====================
-   格言用 <input>：点一下直接在本页改字（不弹系统对话框）。
-   PW2 老 WebKit 对聚焦的输入框会「视口放大」（整页放大）。抑制手段：
-   ① html/body 已设 -webkit-text-size-adjust:100%（禁文字自动放大）；
-   ② 聚焦/失焦时重设 viewport meta（maximum-scale=1, user-scalable=no）
-      并 scrollTo(0,0) + applyViewport 复位，把放大压到最低、编辑完即还原；
-   ③ 失焦自动保存 localStorage（本机保存，不依赖 WiFi）。 */
+   格言用 <input> 展示，但加 readonly、不让它获得可编辑焦点：
+   PW2 浏览器对聚焦的输入框会「聚焦放大」（整页被放大且不恢复）。
+   点格言改为弹出系统输入对话框（prompt）改字 —— 全程不聚焦、
+   不缩放、不弹虚拟键盘；改动存 localStorage（本机保存，不依赖 WiFi）。 */
 (function initMotto(){
   try {
     var saved = localStorage.getItem('kindle_clock_motto');
     if (saved !== null) elMotto.value = saved;
   } catch (e) {}                   // 隐私模式/不支持 localStorage 时忽略
-  function applyVpMeta(){
-    var m = document.querySelector('meta[name="viewport"]');
-    if (m) m.setAttribute('content',
-      'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no');
-  }
-  function rescueZoom(){
-    // 强制复位：重写 viewport meta + 滚到原点 + 重排。老 WebKit 在聚焦放大后
-    // 靠这三步把页面拉回 1:1。
-    applyVpMeta();
-    try { window.scrollTo(0, 0); } catch (e) {}
-    applyViewport();
-  }
   function saveMotto(){
     try { localStorage.setItem('kindle_clock_motto', elMotto.value); } catch (e) {}
     fitInfo();
   }
-  elMotto.addEventListener('focus', function(){
-    applyVpMeta();
-    setTimeout(rescueZoom, 80);    // 聚焦后若被放大，立刻复位
-  });
-  elMotto.addEventListener('input', saveMotto);
-  elMotto.addEventListener('blur',  function(){
-    rescueZoom();
+  elMotto.addEventListener('click', function(e){
+    e.preventDefault();            // readonly input 也不让它抢焦点
+    e.stopPropagation();           // 不触发横竖屏切换
+    var t = prompt('请输入格言：', elMotto.value);
+    if (t === null) return;        // 点取消：保持原样
+    t = t.replace(/^\s+|\s+$/g, '');
+    if (t === '') return;          // 空内容不生效，避免清空格言
+    elMotto.value = t;
     saveMotto();
   });
-  elMotto.addEventListener('click', function(e){ e.stopPropagation(); }); // 不触发横竖屏切换
 })();
 
 // 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
