@@ -2,13 +2,25 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <title>Kindle 时钟</title>
 <style>
+  /* DSEG7 Classic Bold（SIL OFL 1.0，作者 keshikan）七段码字体，
+     已裁剪至仅含数字/冒号/连字符并 base64 内嵌，离线可用 */
+  @font-face {
+    font-family: "DSEG7";
+    src: url(data:font/truetype;charset=utf-8;base64,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) format("truetype");
+    font-weight: normal;
+    font-style: normal;
+  }
+
   html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
+    /* 注意：绝不给 html/body 设 height:100% —— 若文档高度被撑到整屏
+       1024 而可视区只有约 910，老 WebKit 会按"可视高÷文档高"整页缩小
+       适配（四周留白、内容变小）。容器尺寸全部由 JS 实测后写入。 */
+    overflow: hidden;   /* 彻底禁止上下/左右滚动 */
     background: #ffffff;
     color: #000000;
     -webkit-text-size-adjust: 100%;
@@ -32,25 +44,38 @@
   }
   /* 格言：居中基础上稍下移；日期农历：居中基础上稍上移。
      改这里的像素值即可微调幅度（如 60px 更明显）。 */
-  .zone-top .cell    { padding-top: 50px; }
-  .zone-bottom .cell { padding-bottom: 60px; }
-  .rule {
-    width: 80%;
-    margin: 0 auto;
-    border-top: 1px solid #000;
-  }
-  .time-wrap { margin: 14px 0; }
+  .zone-top .cell    { padding-top: 40px; }
+  .zone-bottom .cell { padding-bottom: 40px; }
+  .time-wrap { margin: 0; }
 
   .motto {
+    font-family: inherit;
     font-weight: 600;
     font-size: 50px;
     letter-spacing: 2px;
+    /* 让 <input> 版格言看起来与文字无异、可点击编辑 */
+    -webkit-appearance: none;
+    appearance: none;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    text-align: center;
+    color: inherit;
   }
   .time {
-    font-weight: 700;
-    font-size: 270px;
+    display: inline-block;
+    font-family: "DSEG7", monospace;
+    font-weight: normal;
+    font-size: 200px;
     line-height: 1.0;
-    letter-spacing: 6px;
+    letter-spacing: 0;
+    background: #000000;
+    color: #ffffff;
+    padding: 34px 14px;
+    border-radius: 28px;
   }
   .date {
     font-weight: 600;
@@ -66,23 +91,124 @@
   /* 窄屏（部分固件 viewport 小于 758）兜底，避免溢出 */
   @media (max-width: 600px) {
     .motto { font-size: 36px; }
-    .time  { font-size: 195px; }
+    .time  { font-size: 150px; padding: 8px 20px; border-radius: 20px; }
     .date  { font-size: 51px; }
     .lunar { font-size: 47px; }
+  }
+
+  /* ===================== 横屏（伪横屏） =====================
+     整页逆时针旋转 90° 显示：纯 CSS transform，不依赖设备横屏能力。
+     点页面任意空白处切换。横屏下：时间在上方主区居中最大化，
+     底部信息带（日期+农历在上、格言在下）整宽单行显示，不换行。 */
+  body.landscape #wrap {
+    /* 不用 top:50%+translate 居中：PW2 老 WebKit 下布局盒会溢出视口，
+       触发"整页缩小适配"（内容变小挤在一角）。
+       改为锚定左上角、仅旋转，垂直居中由 JS 按可视高度算 top。 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    -webkit-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+  }
+  body.landscape .box {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  body.landscape .zone { display: block; position: absolute; }
+  /* 底部信息带（画布底部一段；旋转后在屏幕下方）：
+     平均分成左右两半——左=日期+农历，右=格言，中间一条竖分割线 */
+  body.landscape .zone-top,
+  body.landscape .zone-bottom {
+    display: table;
+    top: 554px; height: 200px;
+    text-align: center;
+  }
+  body.landscape .zone-bottom { left: 0;   width: 50%; }   /* 左：日期 + 农历（严格平分） */
+  body.landscape .zone-top    { left: 50%; width: 50%; }   /* 右：格言（严格平分） */
+  body.landscape .zone-top > .cell,
+  body.landscape .zone-bottom > .cell {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    width: 100%; height: 100%;
+    padding: 0;
+  }
+  /* 与竖分割线的距离左右一致：左栏文字右对齐、右栏文字左对齐（镜像对称），
+     间距均为 16px，与文字宽度无关，恒定相等。
+     想调这个距离：改下面两处 padding 的 16px（保持两边相等） */
+  body.landscape .zone-bottom > .cell { text-align: right; padding-right: 16px; }
+  body.landscape .zone-top    > .cell { text-align: left;  padding-left: 16px; }
+  /* 左右半之间的细分割线（画布里是左半的右缘竖线，旋转后在屏幕里为竖直线）
+     bottom: 24px —— 底端不顶到屏幕边，留出空隙 */
+  body.landscape .zone-bottom::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 24px; right: 0;
+    width: 2px;
+    background: #000000;
+  }
+  /* 主区（屏幕上方）：时间竖直居中。
+     必须写显式 height（754-554）：老 WebKit 对 top/bottom 推导的隐式高度
+     不解析 cell 的 height:100%，导致 vertical-align:middle 失效；
+     信息带（显式 height:200px）居中一直正常，用同一套已验证模式 */
+  body.landscape .zone-time {
+    top: 0; left: 0; right: 0;
+    height: 554px;               /* 与分割线（top:554px）对齐，改分割线位置时同步改 */
+    display: table; width: 100%;
+    position: absolute;
+    overflow: hidden;            /* 裁剪任何微小溢出，杜绝滚动条 */
+  }
+  body.landscape .zone-time > .cell {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    height: 100%;
+    padding: 0;
+  }
+  /* 时间块：font-size 只是基准，JS（fitTime）会实测宽度后
+     自动放大/缩小到刚好占满可用宽（左右不留空隙），绝不裁切。
+     padding 是黑块内边距：上下 18 / 左右 0。
+     不竖向拉伸：保持七段数字原始高宽比，在主区内自然竖直居中。 */
+  body.landscape .time {
+    font-size: 260px;
+    padding: 18px 0px;
+  }
+  /* 横屏信息字号：基础 32px（放大后与 200px 信息带更协调）。
+     左右两栏各约 379px；实际渲染时 JS（fitInfo）实测宽度，
+     超栏宽自动微缩，绝不换行（格言 12 字 ≈384px，会自动缩到 ~31px） */
+  body.landscape .date,
+  body.landscape .lunar,
+  body.landscape .motto {
+    font-size: 32px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  body.landscape .motto { letter-spacing: 0; }   /* 取消字距，32px 仍能单行放下 */
+  body.landscape .lunar { margin-top: 10px; }
+  /* 时间与信息带之间的细分割线（画布里是水平线，旋转后在屏幕里为竖直线） */
+  body.landscape .box::after {
+    content: "";
+    position: absolute;
+    top: 554px; left: 0; right: 0;
+    height: 2px;
+    background: #000000;
+    z-index: 5;
   }
 </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" id="wrap">
     <div class="box">
       <div class="zone zone-top">
-        <div class="cell"><div class="motto">临渊羡鱼，不如退而结网。</div></div>
+        <div class="cell"><input class="motto" id="motto" type="text" value="临渊羡鱼，不如退而结网。" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
       </div>
       <div class="zone zone-time">
         <div class="cell">
-          <div class="rule"></div>
           <div class="time-wrap"><div class="time" id="time">--:--</div></div>
-          <div class="rule"></div>
         </div>
       </div>
       <div class="zone zone-bottom">
@@ -240,8 +366,9 @@ function requestWakeLock(){
   } catch (e) { /* 老浏览器直接抛错也忽略 */ }
 }
 
-// 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁
+// 设备被点亮/回到前台：立刻校正时间 + 重新申请唤醒锁 + 重测视口
 function onWake(){
+  applyViewport();
   render();
   requestWakeLock();
 }
@@ -251,10 +378,171 @@ document.addEventListener('visibilitychange', function(){
 window.addEventListener('pageshow', onWake);   // 从缓存/锁屏恢复
 window.addEventListener('focus', onWake);
 
+/* ===================== 首屏铺满修复 =====================
+   Kindle Paperwhite 2 的实验性浏览器首屏把布局视口判定成错值，
+   连 window.innerWidth/innerHeight 在首屏也是错的，要等约一分钟后
+   一次全屏刷新才正确。所以这里不再读窗口尺寸，直接把容器按本机
+   真实分辨率（Paperwhite 2 = 758×1024）设成固定像素，首屏即铺满。
+   换设备时改下面的 DEV_W / DEV_H 即可。 */
+var elWrap = document.getElementById('wrap');
+var elTime = document.getElementById('time');
+var elMotto = document.getElementById('motto');
+var landscape = false;           // 横屏开关：点击页面任意处切换
+
+/* ===================== 格言可编辑 + 本地持久化 =====================
+   把格言做成 <input>：点一下弹出虚拟键盘即可改字；改动后存到
+   localStorage（本机保存，不依赖 WiFi，下次打开自动沿用）。
+   点输入框时不触发横竖屏切换（阻止冒泡到 document 的 click）。 */
+(function initMotto(){
+  try {
+    var saved = localStorage.getItem('kindle_clock_motto');
+    if (saved !== null) elMotto.value = saved;
+  } catch (e) {}                   // 隐私模式/不支持 localStorage 时忽略
+  function applyMottoSize(){
+    elMotto.setAttribute('size', Math.max(4, elMotto.value.length));
+  }
+  function saveMotto(){
+    applyMottoSize();
+    try { localStorage.setItem('kindle_clock_motto', elMotto.value); } catch (e) {}
+    fitInfo();
+  }
+  applyMottoSize();
+  elMotto.addEventListener('input', saveMotto);
+  elMotto.addEventListener('blur',  saveMotto);
+  elMotto.addEventListener('click', function(e){ e.stopPropagation(); });
+})();
+
+// 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
+var DEV_W = 758, FB_H = 897;
+var TIME_FONT = 260;             // ← 横屏时间数字大小基准（px），fitTime 会在此基础上
+                                 //    自动放大/缩小到刚好占满可用宽
+var TIME_SCALE_Y = 1.0;          // ← 时间竖向拉伸倍数（1=不拉伸，保持原始比例）。与 CSS 里是否有 scaleY 保持一致
+var TIME_ZONE_H = 554;           // ← 横屏时间主区高度（与 CSS 的 zone-time height 一致）
+
+/* ===================== 视口尺寸 =====================
+   容器尺寸全部用确定性常量（PW2 实测可视区 758×897），
+   不读实时测量值：点切换时地址栏闪烁会让 clientHeight 在
+   897(工具栏显示)/1024(隐藏) 间跳动，容器尺寸与可视区错位会冒滚动条。 */
+/* 横屏时间块适配：先按基准字号 TIME_FONT 渲染并实测布局宽 offsetWidth，
+   然后按比例把 font-size 换算到「刚好占满可用宽」——超宽会缩、不足会放大
+   （宽度与字号成正比，一次换算即可），左右不留空隙。
+   同时受高度上限约束：字号 × 竖向拉伸后不得超过主区高度，防止压到分割线。 */
+function fitTime(){
+  if (!elTime) return;
+  if (!landscape || !elWrap){ elTime.style.fontSize = ''; return; }
+  var avail = elWrap.clientWidth - 2;      // ← 左右共留 2px 安全边（画布本身已比视口窄 2px）
+  elTime.style.fontSize = TIME_FONT + 'px';
+  var w = elTime.offsetWidth;
+  if (w > 0){
+    var fs = Math.floor(TIME_FONT * avail / w);
+    // 高度上限：黑块高 ≈ 字号 + 36(padding)，乘拉伸倍数后要留在主区内（再留 8px 余量）
+    var maxFs = Math.floor(TIME_ZONE_H / TIME_SCALE_Y) - 36 - 8;
+    if (fs > maxFs) fs = maxFs;
+    elTime.style.fontSize = fs + 'px';
+    // 二次校正：取整误差可能仍超 1~2px，逐 px 回缩直到不超
+    w = elTime.offsetWidth;
+    while (w > avail && fs > 10){
+      fs--;
+      elTime.style.fontSize = fs + 'px';
+      w = elTime.offsetWidth;
+    }
+  }
+}
+/* 横屏信息带适配：日期/农历/格言按基准字号（CSS 32px）渲染后实测宽度，
+   超出所在栏宽就自动缩字号到刚好放下 —— 放大字号也绝不换行。
+   农历比日期短，跟随日期字号即可；竖屏恢复 CSS 默认字号。 */
+function fitInfo(){
+  if (!landscape){ 
+    if (elDate)  elDate.style.fontSize  = '';
+    if (elLunar) elLunar.style.fontSize = '';
+    if (elMotto) elMotto.style.fontSize = '';
+    return;
+  }
+  var base = 32;                            // ← 与 CSS 里 body.landscape 的信息字号保持一致
+  // 左栏：日期 + 农历（cell 有 16px 右内边距贴分割线，留 4px 安全边）
+  var cellL = elDate.parentNode;
+  var availL = cellL.clientWidth - 20;      // 16 内边距 + 4 安全边
+  elDate.style.fontSize = base + 'px';
+  elLunar.style.fontSize = base + 'px';
+  var wL = elDate.offsetWidth;
+  if (wL > availL && wL > 0 && availL > 0){
+    var fsL = Math.floor(base * availL / wL) + 'px';
+    elDate.style.fontSize  = fsL;
+    elLunar.style.fontSize = fsL;
+  }
+  // 右栏：格言（cell 有 16px 左内边距贴分割线，留 4px 安全边）
+  var cellR = elMotto.parentNode;
+  var availR = cellR.clientWidth - 20;      // 16 内边距 + 4 安全边
+  elMotto.style.fontSize = base + 'px';
+  var wR = elMotto.offsetWidth;
+  if (wR > availR && wR > 0 && availR > 0){
+    elMotto.style.fontSize = Math.floor(base * availR / wR) + 'px';
+  }
+}
+function applyViewport(){
+  if (!elWrap) return;
+  // 容器尺寸全部用确定性常量，不读实时测量值 —— 否则点切换时地址栏闪烁，
+  // clientHeight 在 897(工具栏显示)/1024(隐藏) 间跳动，容器尺寸与可视区错位，
+  // 老 WebKit 把 fixed 当 absolute 处理，冒出滚动条。
+  // FB_H=897 同时 ≤ 工具栏显示态(897) 与隐藏态(1024)：工具栏怎么闪都不溢出。
+  var hEff = FB_H, top = 0;
+  elWrap.style.position = 'fixed';
+  elWrap.style.left = '0px';
+  elWrap.style.right = '0px';
+  elWrap.style.overflow = 'hidden';   // 容器内部裁剪，杜绝任何横向溢出滚动条
+  if (landscape){
+    // 横屏：正方形画布边长 756（≤ 屏幕宽 758，旋转后水平/竖直都不溢出），
+    // 在 897 高可视区内垂直居中。
+    var side = Math.min(DEV_W, FB_H) - 2;   // 756（仍 < 视口 758，不触发滚动条）
+    elWrap.style.width  = side + 'px';
+    elWrap.style.height = side + 'px';
+    elWrap.style.top    = Math.floor((hEff - side) / 2) + 'px';
+  } else {
+    // 竖屏：宽高固定 758×897（< 视口，恒不溢出）。切回竖屏时也不会残留横屏尺寸。
+    elWrap.style.width  = DEV_W + 'px';
+    elWrap.style.height = hEff + 'px';
+    elWrap.style.top    = top + 'px';
+  }
+  fitTime();
+  fitInfo();
+  // 强制重排，提示老 WebKit 重新计算布局
+  try { window.scrollTo(0, 0); } catch(e){}
+}
+// 点击页面任意空白处：竖屏 <-> 横屏 切换
+function toggleMode(){
+  landscape = !landscape;
+  document.body.classList.toggle('landscape', landscape);
+  applyViewport();
+}
+document.addEventListener('click', toggleMode);
+window.addEventListener('resize', applyViewport);
+// 加载后分多次重测（覆盖首屏视口滞后的窗口，实测值变了对齐也跟着变）
+function bootFix(){ applyViewport(); }
+bootFix();
+setTimeout(bootFix, 300);
+setTimeout(bootFix, 1000);
+setTimeout(bootFix, 3000);
+setTimeout(bootFix, 6000);
+
 render();
+applyViewport();
 requestWakeLock();
-// 每秒检查一次，但只有分钟/日期变了才重绘，避免无谓黑闪
-setInterval(render, 1000);
+/* ===================== 省电刷新（对齐到下一分钟） =====================
+   显示精度只到分钟（HH:MM），无需每秒刷新。旧版用 setInterval(…,1000)
+   每秒唤醒一次 CPU，墨水屏待机下空转耗电，Kindle 掉电快。
+   改为"对齐到下一分钟整点"的单次 setTimeout：每分钟最多唤醒一次，
+   屏幕也只在分钟变化时重绘一次，其余时间 SoC 可深度休眠。
+   设备从锁屏/休眠被点亮时由 onWake() 立即校正，不依赖这个计时器。 */
+function scheduleNextTick(){
+  var d = new Date();
+  var delay = (60 - d.getSeconds()) * 1000 - d.getMilliseconds() + 50;  // 距下一分钟 + 50ms 缓冲
+  if (delay < 50) delay = 50;
+  setTimeout(function(){
+    render();
+    scheduleNextTick();
+  }, delay);
+}
+scheduleNextTick();
 </script>
 </body>
 </html>
