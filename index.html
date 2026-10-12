@@ -220,6 +220,24 @@
     </div>
   </div>
 
+  <!-- 格言编辑弹窗（挂在 body 下、#wrap 之外，故不受横屏旋转影响；
+       用真正的可编辑输入框，PW2 中文输入法可正常调起，尺寸可自控） -->
+  <div id="mottoEditor" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; z-index:9999; background:rgba(0,0,0,0.55);">
+    <div style="position:absolute; left:50%; top:50%; -webkit-transform:translate(-50%,-50%); transform:translate(-50%,-50%); background:#ffffff; color:#000000; padding:28px 24px; border-radius:14px; width:86%; max-width:480px; box-sizing:border-box; text-align:center;">
+      <div style="font-size:20px; font-weight:600; margin-bottom:18px;">请输入格言</div>
+      <input id="mottoInput" type="text" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             style="width:100%; box-sizing:border-box; font-size:24px; padding:10px 8px; text-align:center; border:2px solid #888888; border-radius:8px; -webkit-appearance:none; appearance:none; outline:0; background:#ffffff; color:#000000;">
+      <div style="margin-top:22px; display:table; width:100%;">
+        <div style="display:table-cell; width:50%; text-align:center; padding-right:8px;">
+          <button id="mottoCancel" style="font-size:22px; padding:10px 0; width:100%; border:1px solid #999999; border-radius:8px; background:#eeeeee; color:#000000;">取消</button>
+        </div>
+        <div style="display:table-cell; width:50%; text-align:center; padding-left:8px;">
+          <button id="mottoOk" style="font-size:22px; padding:10px 0; width:100%; border:1px solid #3366cc; border-radius:8px; background:#3366cc; color:#ffffff;">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
 /* ===================== 农历 / 生肖 换算（1900–2100，离线内置） ===================== */
 var lunarInfo = [
@@ -419,11 +437,15 @@ function fitMotto(avail, base, ls){
 }
 
 /* ===================== 格言可编辑 + 本地持久化 =====================
-   格言用 <input> 展示，但加 readonly、不让它获得可编辑焦点：
-   PW2 浏览器对聚焦的输入框会「聚焦放大」（整页被放大且不恢复）。
-   点格言改为弹出系统输入对话框（prompt）改字 —— 全程不聚焦、
-   不缩放、不弹虚拟键盘；改动存 localStorage（本机保存，不依赖 WiFi）。 */
+   格言用 <input> 展示（readonly，避免聚焦放大）。点一下弹出「页面内自建弹窗」
+   （#mottoEditor，挂在 body 下、不在旋转容器 #wrap 内，故横竖屏都不被带歪、
+   也不触发聚焦放大）；弹窗里是真正的可编辑输入框，PW2 中文输入法可正常调起，
+   尺寸可自控（输入框宽足够显示 12 个汉字）。改动存 localStorage。 */
 (function initMotto(){
+  var elEditor  = document.getElementById('mottoEditor');
+  var elInput   = document.getElementById('mottoInput');
+  var elOk      = document.getElementById('mottoOk');
+  var elCancel  = document.getElementById('mottoCancel');
   try {
     var saved = localStorage.getItem('kindle_clock_motto');
     if (saved !== null) elMotto.value = saved;
@@ -432,15 +454,33 @@ function fitMotto(avail, base, ls){
     try { localStorage.setItem('kindle_clock_motto', elMotto.value); } catch (e) {}
     fitInfo();
   }
+  function openEditor(){
+    elInput.value = elMotto.value;
+    elEditor.style.display = 'block';
+    setTimeout(function(){ try { elInput.focus(); } catch (e) {} }, 50);
+  }
+  function closeEditor(commit){
+    elEditor.style.display = 'none';
+    if (commit){
+      var t = (elInput.value || '').replace(/^\s+|\s+$/g, '');
+      if (t !== ''){ elMotto.value = t; saveMotto(); }
+    }
+    try { elInput.blur(); } catch (e) {}
+  }
   elMotto.addEventListener('click', function(e){
-    e.preventDefault();            // readonly input 也不让它抢焦点
+    e.preventDefault();
     e.stopPropagation();           // 不触发横竖屏切换
-    var t = prompt('请输入格言：', elMotto.value);
-    if (t === null) return;        // 点取消：保持原样
-    t = t.replace(/^\s+|\s+$/g, '');
-    if (t === '') return;          // 空内容不生效，避免清空格言
-    elMotto.value = t;
-    saveMotto();
+    openEditor();
+  });
+  elOk.addEventListener('click', function(e){ e.stopPropagation(); closeEditor(true); });
+  elCancel.addEventListener('click', function(e){ e.stopPropagation(); closeEditor(false); });
+  // 点遮罩空白处 = 取消
+  elEditor.addEventListener('click', function(e){
+    if (e.target === elEditor) closeEditor(false);
+  });
+  // 安全复位：输入框聚焦后若有残留缩放，立即拉回 1:1
+  elInput.addEventListener('focus', function(){
+    setTimeout(function(){ try { window.scrollTo(0, 0); } catch (e) {} applyViewport(); }, 80);
   });
 })();
 
