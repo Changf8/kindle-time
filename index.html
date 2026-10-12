@@ -204,7 +204,7 @@
   <div class="wrap" id="wrap">
     <div class="box">
       <div class="zone zone-top">
-        <div class="cell"><input class="motto" id="motto" type="text" value="临渊羡鱼，不如退而结网。" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+        <div class="cell"><input class="motto" id="motto" type="text" readonly="readonly" value="临渊羡鱼，不如退而结网。"></div>
       </div>
       <div class="zone zone-time">
         <div class="cell">
@@ -419,9 +419,10 @@ function fitMotto(avail, base, ls){
 }
 
 /* ===================== 格言可编辑 + 本地持久化 =====================
-   把格言做成 <input>：点一下弹出虚拟键盘即可改字；改动后存到
-   localStorage（本机保存，不依赖 WiFi，下次打开自动沿用）。
-   点输入框时不触发横竖屏切换（阻止冒泡到 document 的 click）。 */
+   格言用 <input> 展示，但加 readonly、不让它获得可编辑焦点：
+   PW2 浏览器对聚焦的输入框会「聚焦放大」（整页被放大且不恢复）。
+   点格言改为弹出系统输入对话框（prompt）改字 —— 全程不聚焦、
+   不缩放、不弹虚拟键盘；改动存 localStorage（本机保存，不依赖 WiFi）。 */
 (function initMotto(){
   try {
     var saved = localStorage.getItem('kindle_clock_motto');
@@ -431,9 +432,16 @@ function fitMotto(avail, base, ls){
     try { localStorage.setItem('kindle_clock_motto', elMotto.value); } catch (e) {}
     fitInfo();
   }
-  elMotto.addEventListener('input', saveMotto);
-  elMotto.addEventListener('blur',  saveMotto);
-  elMotto.addEventListener('click', function(e){ e.stopPropagation(); });
+  elMotto.addEventListener('click', function(e){
+    e.preventDefault();            // readonly input 也不让它抢焦点
+    e.stopPropagation();           // 不触发横竖屏切换
+    var t = prompt('请输入格言：', elMotto.value);
+    if (t === null) return;        // 点取消：保持原样
+    t = t.replace(/^\s+|\s+$/g, '');
+    if (t === '') return;          // 空内容不生效，避免清空格言
+    elMotto.value = t;
+    saveMotto();
+  });
 })();
 
 // 兜底常量：PW2 硬件 758×1024；实机实测浏览器可视区 758×897（工具栏已由浏览器扣除）
