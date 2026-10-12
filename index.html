@@ -492,10 +492,22 @@ setTimeout(bootFix, 6000);
 render();
 applyViewport();
 requestWakeLock();
-// 每秒检查一次，但只有分钟/日期变了才重绘，避免无谓黑闪。
-// 注意：不要在秒级循环里调 applyViewport —— 老WebKit上每秒写样式+scrollTo
-// 会干扰浏览器自身的视口/缩放判定（实测出现整页异常放大）
-setInterval(function(){ render(); }, 1000);
+/* ===================== 省电刷新（对齐到下一分钟） =====================
+   显示精度只到分钟（HH:MM），无需每秒刷新。旧版用 setInterval(…,1000)
+   每秒唤醒一次 CPU，墨水屏待机下空转耗电，Kindle 掉电快。
+   改为"对齐到下一分钟整点"的单次 setTimeout：每分钟最多唤醒一次，
+   屏幕也只在分钟变化时重绘一次，其余时间 SoC 可深度休眠。
+   设备从锁屏/休眠被点亮时由 onWake() 立即校正，不依赖这个计时器。 */
+function scheduleNextTick(){
+  var d = new Date();
+  var delay = (60 - d.getSeconds()) * 1000 - d.getMilliseconds() + 50;  // 距下一分钟 + 50ms 缓冲
+  if (delay < 50) delay = 50;
+  setTimeout(function(){
+    render();
+    scheduleNextTick();
+  }, delay);
+}
+scheduleNextTick();
 </script>
 </body>
 </html>
