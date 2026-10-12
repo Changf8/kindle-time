@@ -387,7 +387,36 @@ window.addEventListener('focus', onWake);
 var elWrap = document.getElementById('wrap');
 var elTime = document.getElementById('time');
 var elMotto = document.getElementById('motto');
-var landscape = false;           // 横屏开关：点击页面任意处切换
+var landscape = false;           // 横屏开关：点击时间区域切换
+
+/* 隐藏测量元素：量出格言文字的真实像素宽度。
+   <input> 自身受 size/width 限制，offsetWidth 读不准文字实际宽度，
+   所以借一个同字体、不换行的隐藏 span 来量。 */
+var elMeasure = document.createElement('span');
+elMeasure.style.position = 'absolute';
+elMeasure.style.left = '-9999px';
+elMeasure.style.visibility = 'hidden';
+elMeasure.style.whiteSpace = 'nowrap';
+elMeasure.style.fontFamily = 'inherit';
+elMeasure.style.fontWeight = '600';
+document.body.appendChild(elMeasure);
+function measureMotto(text, fontPx, ls){
+  elMeasure.style.fontSize = fontPx + 'px';
+  elMeasure.style.letterSpacing = (ls || 0) + 'px';
+  elMeasure.textContent = text;
+  return elMeasure.offsetWidth;
+}
+// 把格言字号缩到放得下，并把输入框宽度设为「恰好等于文字宽度」，
+// 这样末尾字不会被父容器裁掉（之前用 size 属性估算会过宽而裁切）。
+function fitMotto(avail, base, ls){
+  if (!elMotto) return;
+  var text = elMotto.value || '';
+  var w = measureMotto(text, base, ls);
+  var fs = base;
+  if (w > avail && w > 0 && avail > 0) fs = Math.floor(base * avail / w);
+  elMotto.style.fontSize = fs + 'px';
+  elMotto.style.width = measureMotto(text, fs, ls) + 'px';
+}
 
 /* ===================== 格言可编辑 + 本地持久化 =====================
    把格言做成 <input>：点一下弹出虚拟键盘即可改字；改动后存到
@@ -398,15 +427,10 @@ var landscape = false;           // 横屏开关：点击页面任意处切换
     var saved = localStorage.getItem('kindle_clock_motto');
     if (saved !== null) elMotto.value = saved;
   } catch (e) {}                   // 隐私模式/不支持 localStorage 时忽略
-  function applyMottoSize(){
-    elMotto.setAttribute('size', Math.max(4, elMotto.value.length));
-  }
   function saveMotto(){
-    applyMottoSize();
     try { localStorage.setItem('kindle_clock_motto', elMotto.value); } catch (e) {}
     fitInfo();
   }
-  applyMottoSize();
   elMotto.addEventListener('input', saveMotto);
   elMotto.addEventListener('blur',  saveMotto);
   elMotto.addEventListener('click', function(e){ e.stopPropagation(); });
@@ -448,20 +472,23 @@ function fitTime(){
     }
   }
 }
-/* 横屏信息带适配：日期/农历/格言按基准字号（CSS 32px）渲染后实测宽度，
-   超出所在栏宽就自动缩字号到刚好放下 —— 放大字号也绝不换行。
-   农历比日期短，跟随日期字号即可；竖屏恢复 CSS 默认字号。 */
+/* 横/竖屏信息字号自适应：实测文字真实宽度，超栏宽自动微缩到刚好放下（不换行/不裁切）。
+   竖屏：日期/农历恢复 CSS 默认字号；格言在全宽上方区，基准 50px、字距 2px。
+   横屏：日期/农历/格言基准 32px，左右各半栏；格言字距 0。 */
 function fitInfo(){
-  if (!landscape){ 
+  if (!elMotto) return;
+  if (!landscape){
     if (elDate)  elDate.style.fontSize  = '';
     if (elLunar) elLunar.style.fontSize = '';
-    if (elMotto) elMotto.style.fontSize = '';
+    var cellP = elMotto.parentNode;
+    var availP = cellP.clientWidth - 8;        // 上方区全宽，留 8px 安全边
+    fitMotto(availP, 50, 2);                   // 竖屏字距 2px
     return;
   }
   var base = 32;                            // ← 与 CSS 里 body.landscape 的信息字号保持一致
-  // 左栏：日期 + 农历（cell 有 16px 右内边距贴分割线，留 4px 安全边）
+  // 左栏：日期 + 农历（cell 16px 右内边距贴分割线 + 4px 安全边）
   var cellL = elDate.parentNode;
-  var availL = cellL.clientWidth - 20;      // 16 内边距 + 4 安全边
+  var availL = cellL.clientWidth - 20;
   elDate.style.fontSize = base + 'px';
   elLunar.style.fontSize = base + 'px';
   var wL = elDate.offsetWidth;
@@ -470,14 +497,10 @@ function fitInfo(){
     elDate.style.fontSize  = fsL;
     elLunar.style.fontSize = fsL;
   }
-  // 右栏：格言（cell 有 16px 左内边距贴分割线，留 4px 安全边）
+  // 右栏：格言（cell 16px 左内边距贴分割线 + 4px 安全边，字距 0）
   var cellR = elMotto.parentNode;
-  var availR = cellR.clientWidth - 20;      // 16 内边距 + 4 安全边
-  elMotto.style.fontSize = base + 'px';
-  var wR = elMotto.offsetWidth;
-  if (wR > availR && wR > 0 && availR > 0){
-    elMotto.style.fontSize = Math.floor(base * availR / wR) + 'px';
-  }
+  var availR = cellR.clientWidth - 20;
+  fitMotto(availR, base, 0);
 }
 function applyViewport(){
   if (!elWrap) return;
