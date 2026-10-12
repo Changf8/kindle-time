@@ -508,13 +508,15 @@ function applyViewport(){
   // 强制重排，提示老 WebKit 重新计算布局
   try { window.scrollTo(0, 0); } catch(e){}
 }
-// 点击页面任意空白处：竖屏 <-> 横屏 切换
+// 点击「时间区域」：竖屏 <-> 横屏 切换。
+// 监听只挂在 .zone-time 上，点日期/格言/其它空白处不触发。
 function toggleMode(){
   landscape = !landscape;
   document.body.classList.toggle('landscape', landscape);
   applyViewport();
 }
-document.addEventListener('click', toggleMode);
+var elTimeZone = document.querySelector('.zone-time');
+if (elTimeZone) elTimeZone.addEventListener('click', toggleMode);
 window.addEventListener('resize', applyViewport);
 // 加载后分多次重测（覆盖首屏视口滞后的窗口，实测值变了对齐也跟着变）
 function bootFix(){ applyViewport(); }
